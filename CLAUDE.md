@@ -32,16 +32,16 @@ Diário de surf onde o utilizador regista uma sessão em **menos de 30 segundos*
 
 ```
 mare/
-├── app/                      # expo-router (ecrãs)
-│   ├── (tabs)/
-│   │   ├── index.tsx         # Sessões (histórico)
-│   │   ├── spots.tsx         # Spots
-│   │   └── perfil.tsx        # Perfil / definições / quiver
-│   ├── sessao/
-│   │   ├── nova.tsx          # Registo rápido de sessão
-│   │   └── [id].tsx          # Detalhe de sessão
-│   └── spot/[id].tsx         # Detalhe de spot (+ insights na Fase 4)
 ├── src/
+│   ├── app/                  # expo-router (ecrãs)
+│   │   ├── (tabs)/
+│   │   │   ├── index.tsx     # Sessões (histórico)
+│   │   │   ├── spots.tsx     # Spots
+│   │   │   └── perfil.tsx    # Perfil / definições / quiver
+│   │   ├── sessao/
+│   │   │   ├── nova.tsx      # Registo rápido de sessão
+│   │   │   └── [id].tsx      # Detalhe de sessão
+│   │   └── spot/[id].tsx     # Detalhe de spot (+ insights na Fase 4)
 │   ├── db/
 │   │   ├── database.ts       # init, migrations, schema_version
 │   │   ├── migrations/       # 001_initial.ts, 002_...
