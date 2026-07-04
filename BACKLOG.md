@@ -6,11 +6,15 @@ Regras: trabalhar por ordem; uma fase só fecha quando a Definition of Done (DoD
 
 ## Fase 0 — Fundação (Semana 1)
 
-- [ ] P0 — Scaffold Expo SDK 54+ com TypeScript strict, expo-router, estrutura de pastas do CLAUDE.md
-- [ ] P0 — `src/db/database.ts`: init expo-sqlite, sistema de migrations com `schema_version` (portar padrão do FitAPP)
+- [x] P0 — Scaffold Expo SDK 54+ com TypeScript strict, expo-router, estrutura de pastas do CLAUDE.md
+  <!-- Feito com SDK 57 (template default, expo-router em src/app/ — CLAUDE.md atualizado). Reconciliação: script morto reset-project removido, .gitattributes LF, example/ do template apagada. -->
+- [x] P0 — `src/db/database.ts`: init expo-sqlite, sistema de migrations com `schema_version` (portar padrão do FitAPP)
+  <!-- Decisões: runner é o dono exclusivo de schema_version (migrations não a tocam); runner extraído para src/db/migrationRunner.ts sem imports expo (testável sem mocks); transações via BEGIN/COMMIT em execAsync para manter a interface MigrationDb mínima; getDatabase() limpa o singleton em caso de falha de init para permitir retry. -->
 - [ ] P0 — Migration `001_initial` conforme `docs/DATABASE.md`
+  <!-- Ao criar: retirar CREATE TABLE schema_version/INSERT do SQL da migration e atualizar docs/DATABASE.md (runner-dono, decisão 2026-07-04). -->
 - [ ] P0 — Repositories vazios com interfaces tipadas: `spotRepo`, `boardRepo`, `sessionRepo`, `conditionsRepo`
-- [ ] P1 — Setup Jest + primeiro teste (migrations correm de 0 → v1 numa BD em memória)
+- [x] P1 — Setup Jest + primeiro teste (migrations correm de 0 → v1 numa BD em memória)
+  <!-- jest-expo preset; teste do runner contra better-sqlite3 (adaptador MigrationDb, zero mocks): 0→topo, idempotência, rollback de SQL inválido, ordenação. O cenário "0→v1 com schema real" acresce ao mesmo ficheiro quando a 001_initial existir. -->
 - [ ] P1 — `src/i18n` com strings pt-PT centralizadas
 - [ ] P2 — ESLint + Prettier alinhados com o FitAPP
 
