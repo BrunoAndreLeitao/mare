@@ -31,6 +31,8 @@ Regras: trabalhar por ordem; uma fase só fecha quando a Definition of Done (DoD
   <!-- Progresso (2026-07-05, Tarefa 1 da fase): camada de dados feita — SqlDb + RepoDeps em src/db/sqlDb.ts (runAsync devolve { changes } para lançar-em-inexistente numa só round-trip; desvio aprovado), createSpotRepo + rowToSpot exportado em repositories/spotRepo.ts, composição em src/db/index.ts (expo-crypto), 9 testes better-sqlite3 com schema real (inclui edge: update com valores idênticos não lança). Falta a UI (Tarefa 4). -->
 - [ ] P0 — Validação de coordenadas (lat/lon plausíveis; avisar se o ponto parecer interior/terra — heurística simples, não bloqueante)
 - [ ] P1 — CRUD de boards (quiver): nome, tipo, volume
+  <!-- Progresso (2026-07-05, Tarefa 2 da fase): camada de dados feita — createBoardRepo + rowToBoard exportado em repositories/boardRepo.ts (decalque do spotRepo; board_type tipado BoardType | null no row sem validação runtime, premissa: o repo é o único escritor da coluna — se surgir outro (import, sync), a validação entra nesse momento), getBoardRepo() na composição, adaptador better-sqlite3 + makeDeps extraídos para __tests__/helpers/testDb.ts (segundo uso chegou, como planeado), 9 testes espelho dos do spot. Nota: o jest-expo usa afinal o testMatch default do Jest (qualquer .ts sob __tests__ é suite), pelo que o helper era recolhido como suite vazia — resolvido com testPathIgnorePatterns no package.json a excluir __tests__/helpers/ (repondo o default de node_modules). Falta a UI (Tarefa 5). -->
+
 - [ ] P1 — Arquivar (soft delete) spots e boards
 - [ ] P2 — Mapa com pin arrastável (react-native-maps) para afinar a posição do spot
 - [ ] P2 — Seed opcional: 5-10 spots conhecidos da Linha/Ericeira para arranque rápido

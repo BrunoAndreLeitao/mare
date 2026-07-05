@@ -5,6 +5,7 @@ import { randomUUID } from 'expo-crypto';
 
 import { getDatabase } from './database';
 import { type RepoDeps } from './sqlDb';
+import { createBoardRepo, type BoardRepository } from './repositories/boardRepo';
 import { createSpotRepo, type SpotRepository } from './repositories/spotRepo';
 
 const deps: RepoDeps = {
@@ -14,4 +15,8 @@ const deps: RepoDeps = {
 
 export async function getSpotRepo(): Promise<SpotRepository> {
   return createSpotRepo(await getDatabase(), deps);
+}
+
+export async function getBoardRepo(): Promise<BoardRepository> {
+  return createBoardRepo(await getDatabase(), deps);
 }

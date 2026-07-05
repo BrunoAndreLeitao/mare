@@ -47,7 +47,8 @@
     "test": "jest"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": ["[/\\\\]node_modules[/\\\\]", "__tests__[/\\\\]helpers[/\\\\]"]
   },
   "private": true
 }
