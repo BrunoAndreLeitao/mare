@@ -28,6 +28,7 @@ Regras: trabalhar por ordem; uma fase só fecha quando a Definition of Done (DoD
 ## Fase 1 — Spots e Quiver (Semana 2)
 
 - [ ] P0 — CRUD de spots: lista + formulário (nome, coordenadas, notas). Coordenadas por input manual **ou** "usar a minha localização" (expo-location) — mapa interativo é P2
+  <!-- Progresso (2026-07-05, Tarefa 1 da fase): camada de dados feita — SqlDb + RepoDeps em src/db/sqlDb.ts (runAsync devolve { changes } para lançar-em-inexistente numa só round-trip; desvio aprovado), createSpotRepo + rowToSpot exportado em repositories/spotRepo.ts, composição em src/db/index.ts (expo-crypto), 9 testes better-sqlite3 com schema real (inclui edge: update com valores idênticos não lança). Falta a UI (Tarefa 4). -->
 - [ ] P0 — Validação de coordenadas (lat/lon plausíveis; avisar se o ponto parecer interior/terra — heurística simples, não bloqueante)
 - [ ] P1 — CRUD de boards (quiver): nome, tipo, volume
 - [ ] P1 — Arquivar (soft delete) spots e boards
