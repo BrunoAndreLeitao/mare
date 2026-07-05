@@ -16,7 +16,8 @@ Regras: trabalhar por ordem; uma fase só fecha quando a Definition of Done (DoD
   <!-- Decisões (2026-07-05): tipos de domínio em src/db/types.ts (camelCase; mapeamento row→domínio é das implementações, Fases 1-2); leituras devolvem null, mutações LANÇAM em id inexistente; inputs New* com opcionais ?, leituras com | null; sem stubs — só interfaces, tsc é a verificação. Snapshot parcial: saveSnapshot(parcial) + markFailed(id,false), por esta ordem (contrato no conditionsRepo). listFetchable pode evoluir para FetchableSession na Fase 2 (autorizado). LIMITAÇÃO CONHECIDA (decisão consciente): Partial<New*> nos updates não permite limpar campos para NULL (ex: apagar notes, desassociar boardId) — resolve-se na Fase 1 com tipos *Changes dedicados (campos limpáveis aceitam | null) quando o primeiro ecrã de edição precisar. -->
 - [x] P1 — Setup Jest + primeiro teste (migrations correm de 0 → v1 numa BD em memória)
   <!-- jest-expo preset; teste do runner contra better-sqlite3 (adaptador MigrationDb, zero mocks): 0→topo, idempotência, rollback de SQL inválido, ordenação. O cenário "0→v1 com schema real" acresce ao mesmo ficheiro quando a 001_initial existir. -->
-- [ ] P1 — `src/i18n` com strings pt-PT centralizadas
+- [x] P1 — `src/i18n` com strings pt-PT centralizadas
+  <!-- (2026-07-05, feito no arranque da Fase 1 por ser pré-requisito da UI) Objeto tipado sem bibliotecas; labels de BoardType com satisfies Record<BoardType, string>; 'en' futuro troca o objeto, não a infraestrutura. -->
 - [ ] P2 — ESLint + Prettier alinhados com o FitAPP
 - [ ] P2 — Investigar auto-inclusão de @types com TS 6.0.3 via `tsc --explainFiles` (cosmético, não bloqueante — o `"types": ["jest"]` explícito no tsconfig é suficiente por construção)
 
