@@ -2,6 +2,10 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    // Auto-inclusão de node_modules/@types falhou com TS 6.0 (sem "types"
+    // definido em lado nenhum — ver expo/tsconfig.base). Explícito é imune
+    // a defaults do compilador. Causa raiz: por-investigar (BACKLOG).
+    "types": ["jest"],
     "paths": {
       "@/*": [
         "./src/*"

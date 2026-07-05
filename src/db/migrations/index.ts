@@ -1,8 +1,8 @@
-export interface Migration {
-  version: number;
-  statements: string[];
-}
+import { type Migration } from '../migrationRunner';
+
+import { migration001 } from './001_initial';
+
+export { type Migration };
 
 // Ordered, additive, never edited after publish (CLAUDE.md).
-// 001_initial enters here in the next backlog task.
-export const migrations: Migration[] = [];
+export const migrations: Migration[] = [migration001];

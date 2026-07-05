@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 
-import { type MigrationDb, runMigrations } from '../migrationRunner';
-import { type Migration } from '../migrations';
+import { type Migration, type MigrationDb, runMigrations } from '../migrationRunner';
+import { migrations } from '../migrations';
 
 // Real SQLite in memory; no expo-sqlite mocks. better-sqlite3 is synchronous,
 // so the adapter just wraps calls in resolved promises.
@@ -98,5 +98,32 @@ describe('runMigrations', () => {
     expect(schemaVersion(raw)).toBe(2);
     const row = raw.prepare('SELECT id FROM fixture_a').get() as { id: string };
     expect(row.id).toBe('from-v2');
+  });
+
+  test('(e) 001_initial: empty DB migrates 0 -> v1 with the real schema', async () => {
+    await runMigrations(db, migrations);
+
+    expect(schemaVersion(raw)).toBe(1);
+
+    for (const table of [
+      'schema_version',
+      'spots',
+      'boards',
+      'sessions',
+      'session_conditions',
+    ]) {
+      expect(tableExists(raw, table)).toBe(true);
+    }
+
+    const indexes = raw
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name LIKE 'idx_%'")
+      .all()
+      .map((r) => (r as { name: string }).name)
+      .sort();
+    expect(indexes).toEqual([
+      'idx_conditions_status',
+      'idx_sessions_spot_started',
+      'idx_sessions_started',
+    ]);
   });
 });

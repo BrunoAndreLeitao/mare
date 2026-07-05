@@ -10,13 +10,14 @@ Regras: trabalhar por ordem; uma fase só fecha quando a Definition of Done (DoD
   <!-- Feito com SDK 57 (template default, expo-router em src/app/ — CLAUDE.md atualizado). Reconciliação: script morto reset-project removido, .gitattributes LF, example/ do template apagada. -->
 - [x] P0 — `src/db/database.ts`: init expo-sqlite, sistema de migrations com `schema_version` (portar padrão do FitAPP)
   <!-- Decisões: runner é o dono exclusivo de schema_version (migrations não a tocam); runner extraído para src/db/migrationRunner.ts sem imports expo (testável sem mocks); transações via BEGIN/COMMIT em execAsync para manter a interface MigrationDb mínima; getDatabase() limpa o singleton em caso de falha de init para permitir retry. -->
-- [ ] P0 — Migration `001_initial` conforme `docs/DATABASE.md`
-  <!-- Ao criar: retirar CREATE TABLE schema_version/INSERT do SQL da migration e atualizar docs/DATABASE.md (runner-dono, decisão 2026-07-04). -->
+- [x] P0 — Migration `001_initial` conforme `docs/DATABASE.md`
+  <!-- Decisões (2026-07-05): runner-dono aplicado — SQL da 001 sem bloco schema_version nem PRAGMAs, docs/DATABASE.md atualizado com nota; tipo Migration movido para migrationRunner.ts (o runner define o contrato; evita ciclo index↔001); 7 statements individuais por ordem de dependência de FK; teste (e) com schema real: schema_version=1, 5 tabelas, 3 índices; tsconfig ganhou "types": ["jest"] porque a auto-inclusão de @types falhou com TS 6.0.3 (item P2 no fim da fase). -->
 - [ ] P0 — Repositories vazios com interfaces tipadas: `spotRepo`, `boardRepo`, `sessionRepo`, `conditionsRepo`
 - [x] P1 — Setup Jest + primeiro teste (migrations correm de 0 → v1 numa BD em memória)
   <!-- jest-expo preset; teste do runner contra better-sqlite3 (adaptador MigrationDb, zero mocks): 0→topo, idempotência, rollback de SQL inválido, ordenação. O cenário "0→v1 com schema real" acresce ao mesmo ficheiro quando a 001_initial existir. -->
 - [ ] P1 — `src/i18n` com strings pt-PT centralizadas
 - [ ] P2 — ESLint + Prettier alinhados com o FitAPP
+- [ ] P2 — Investigar auto-inclusão de @types com TS 6.0.3 via `tsc --explainFiles` (cosmético, não bloqueante — o `"types": ["jest"]` explícito no tsconfig é suficiente por construção)
 
 **DoD:** app arranca no dispositivo, BD criada com schema v1, teste de migrations verde.
 

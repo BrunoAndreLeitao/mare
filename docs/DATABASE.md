@@ -16,15 +16,9 @@ A separação `sessions` / `session_conditions` é deliberada: a sessão é cria
 
 ## SQL — Migration 001_initial
 
+> **Nota (2026-07-04):** a tabela `schema_version` é criada e gerida exclusivamente pelo runner (`src/db/migrationRunner.ts`) — as migrations nunca a tocam. Os PRAGMAs (`journal_mode=WAL`, `foreign_keys=ON`) vivem no `getDatabase()`: são por-conexão e não podem correr dentro da transação da migration.
+
 ```sql
-PRAGMA journal_mode = WAL;
-PRAGMA foreign_keys = ON;
-
-CREATE TABLE schema_version (
-  version     INTEGER NOT NULL
-);
-INSERT INTO schema_version (version) VALUES (1);
-
 -- ---------------------------------------------------------------
 -- Spots: locais de surf do utilizador
 -- ---------------------------------------------------------------

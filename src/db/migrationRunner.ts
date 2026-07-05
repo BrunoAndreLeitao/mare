@@ -1,4 +1,8 @@
-import { type Migration } from './migrations';
+// The runner defines the migration contract; migrations/ implements it.
+export interface Migration {
+  version: number;
+  statements: string[];
+}
 
 // Minimal surface the migration runner needs. expo-sqlite's SQLiteDatabase
 // satisfies it structurally; tests back it with a better-sqlite3 adapter.
