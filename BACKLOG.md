@@ -20,7 +20,7 @@ Regras: trabalhar por ordem; uma fase só fecha quando a Definition of Done (DoD
 - [ ] P2 — ESLint + Prettier alinhados com o FitAPP
 - [ ] P2 — Investigar auto-inclusão de @types com TS 6.0.3 via `tsc --explainFiles` (cosmético, não bloqueante — o `"types": ["jest"]` explícito no tsconfig é suficiente por construção)
 
-**DoD:** app arranca no dispositivo, BD criada com schema v1, teste de migrations verde.
+**DoD:** ✅ **cumprido 2026-07-05** — app arranca no dispositivo, BD criada com schema v1, teste de migrations verde. Prova: dispositivo real via Expo Go (SDK 57), `[mare] schema_version = 1` em dois arranques consecutivos (init + idempotência), confirmado pelo Bruno; testes 5/5 PASS. Pendentes não-bloqueantes da fase: P1 i18n, P2 ESLint/Prettier, P2 investigação @types.
 
 ---
 
