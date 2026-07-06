@@ -33,7 +33,13 @@
           "imageWidth": 76
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "A Maré usa a tua localização apenas para preencher as coordenadas de um spot quando tocas em «Usar a minha localização»."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

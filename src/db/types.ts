@@ -43,6 +43,15 @@ export interface NewSpot {
   notes?: string;
 }
 
+// Update input: unlike Partial<NewSpot>, clearable fields accept an explicit
+// null so edit screens can wipe them to SQL NULL (undefined = leave untouched).
+export interface SpotChanges {
+  name?: string;
+  latitude?: number;
+  longitude?: number;
+  notes?: string | null;
+}
+
 export interface Board {
   id: string;
   name: string;

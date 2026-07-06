@@ -140,4 +140,19 @@ describe('spotRepo', () => {
 
     expect(updated).toEqual({ ...created, updatedAt: 2_000 });
   });
+
+  test('(j) update clears notes to SQL NULL with an explicit null', async () => {
+    const created = await repo.create({
+      name: 'Carcavelos',
+      latitude: 38.6788,
+      longitude: -9.3364,
+      notes: 'fundo de areia',
+    });
+
+    deps.clock.value = 2_000;
+    const updated = await repo.update(created.id, { notes: null });
+
+    expect(updated).toEqual({ ...created, notes: null, updatedAt: 2_000 });
+    expect(await repo.getById(created.id)).toEqual(updated);
+  });
 });

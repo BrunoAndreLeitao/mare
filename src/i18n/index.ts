@@ -14,6 +14,10 @@ export const t = {
     cancel: 'Cancelar',
     archive: 'Arquivar',
     required: 'Obrigatório',
+    genericError: 'Algo correu mal. Tenta de novo.',
+  },
+  profile: {
+    placeholder: 'Quiver e definições chegam em breve.',
   },
   sessions: {
     emptyTitle: 'Sem sessões',

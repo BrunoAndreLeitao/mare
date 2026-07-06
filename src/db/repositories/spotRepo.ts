@@ -1,14 +1,16 @@
 import { type RepoDeps, type SqlDb, type SqlValue } from '../sqlDb';
-import { type NewSpot, type Spot } from '../types';
+import { type NewSpot, type Spot, type SpotChanges } from '../types';
 
 // Not-found semantics: reads return null; mutations THROW if the id does not
 // exist — a missing id in a mutation is a caller bug, not a normal state.
+// Update semantics: undefined leaves a field untouched; explicit null clears
+// a clearable field (notes) to SQL NULL — see SpotChanges in ../types.
 export interface SpotRepository {
   create(input: NewSpot): Promise<Spot>;
   getById(id: string): Promise<Spot | null>;
   /** Spots with is_archived = 0. */
   listActive(): Promise<Spot[]>;
-  update(id: string, changes: Partial<NewSpot>): Promise<Spot>;
+  update(id: string, changes: SpotChanges): Promise<Spot>;
   /** Soft delete (docs/DATABASE.md §Regras 4) — sessions keep referencing the spot. */
   archive(id: string): Promise<void>;
 }
@@ -79,7 +81,7 @@ export function createSpotRepo(db: SqlDb, deps: RepoDeps): SpotRepository {
       return rows.map(rowToSpot);
     },
 
-    async update(id: string, changes: Partial<NewSpot>): Promise<Spot> {
+    async update(id: string, changes: SpotChanges): Promise<Spot> {
       const sets: string[] = [];
       const params: SqlValue[] = [];
       if (changes.name !== undefined) {
