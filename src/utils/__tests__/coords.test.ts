@@ -1,27 +1,33 @@
-import { parseCoordinate, validateCoords } from '../coords';
+import { parseDecimal, validateCoords } from '../coords';
 
-describe('parseCoordinate', () => {
+describe('parseDecimal', () => {
   it('a) aceita ponto e vírgula decimal', () => {
-    expect(parseCoordinate('38.678')).toBe(38.678);
-    expect(parseCoordinate('38,678')).toBe(38.678);
-    expect(parseCoordinate('-9,336')).toBe(-9.336);
+    expect(parseDecimal('38.678')).toBe(38.678);
+    expect(parseDecimal('38,678')).toBe(38.678);
+    expect(parseDecimal('-9,336')).toBe(-9.336);
   });
 
   it('b) faz trim de espaços à volta', () => {
-    expect(parseCoordinate('  -9.3364  ')).toBe(-9.3364);
+    expect(parseDecimal('  -9.3364  ')).toBe(-9.3364);
   });
 
   it('c) rejeita strings vazias ou só com espaços', () => {
-    expect(parseCoordinate('')).toBeNull();
-    expect(parseCoordinate('   ')).toBeNull();
+    expect(parseDecimal('')).toBeNull();
+    expect(parseDecimal('   ')).toBeNull();
   });
 
   it('d) rejeita lixo, incluindo prefixos/sufixos numéricos', () => {
-    expect(parseCoordinate('abc')).toBeNull();
-    expect(parseCoordinate('abc12')).toBeNull();
-    expect(parseCoordinate('12abc')).toBeNull();
-    expect(parseCoordinate('1,2,3')).toBeNull();
-    expect(parseCoordinate('Infinity')).toBeNull();
+    expect(parseDecimal('abc')).toBeNull();
+    expect(parseDecimal('abc12')).toBeNull();
+    expect(parseDecimal('12abc')).toBeNull();
+    expect(parseDecimal('1,2,3')).toBeNull();
+    expect(parseDecimal('Infinity')).toBeNull();
+  });
+
+  it('e) é agnóstico ao sinal — aceita negativos; rejeitá-los é do chamador', () => {
+    expect(parseDecimal('-9.33')).toBe(-9.33);
+    expect(parseDecimal('-0.5')).toBe(-0.5);
+    expect(parseDecimal('42')).toBe(42);
   });
 });
 

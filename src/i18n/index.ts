@@ -16,9 +16,6 @@ export const t = {
     required: 'Obrigatório',
     genericError: 'Algo correu mal. Tenta de novo.',
   },
-  profile: {
-    placeholder: 'Quiver e definições chegam em breve.',
-  },
   sessions: {
     emptyTitle: 'Sem sessões',
     emptyBody: 'O registo de sessões chega na próxima fase.',
@@ -52,7 +49,9 @@ export const t = {
     name: 'Nome',
     namePlaceholder: "6'2 Lost Driver",
     type: 'Tipo',
+    typeNone: 'Nenhum',
     volume: 'Volume (L)',
+    volumeInvalid: 'O volume tem de ser um número positivo.',
     archiveConfirm: 'Arquivar esta prancha? As sessões dela mantêm-se no histórico.',
     types: {
       shortboard: 'Shortboard',

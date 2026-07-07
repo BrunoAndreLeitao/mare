@@ -1,14 +1,16 @@
 import { type RepoDeps, type SqlDb, type SqlValue } from '../sqlDb';
-import { type Board, type BoardType, type NewBoard } from '../types';
+import { type Board, type BoardChanges, type BoardType, type NewBoard } from '../types';
 
 // Not-found semantics: reads return null; mutations THROW if the id does not
 // exist — a missing id in a mutation is a caller bug, not a normal state.
+// Update semantics: undefined leaves a field untouched; explicit null clears
+// a clearable field (boardType, volumeL) to SQL NULL — see BoardChanges.
 export interface BoardRepository {
   create(input: NewBoard): Promise<Board>;
   getById(id: string): Promise<Board | null>;
   /** Boards with is_archived = 0. */
   listActive(): Promise<Board[]>;
-  update(id: string, changes: Partial<NewBoard>): Promise<Board>;
+  update(id: string, changes: BoardChanges): Promise<Board>;
   /** Soft delete (docs/DATABASE.md §Regras 4) — sessions keep referencing the board. */
   archive(id: string): Promise<void>;
 }
@@ -80,7 +82,7 @@ export function createBoardRepo(db: SqlDb, deps: RepoDeps): BoardRepository {
       return rows.map(rowToBoard);
     },
 
-    async update(id: string, changes: Partial<NewBoard>): Promise<Board> {
+    async update(id: string, changes: BoardChanges): Promise<Board> {
       const sets: string[] = [];
       const params: SqlValue[] = [];
       if (changes.name !== undefined) {

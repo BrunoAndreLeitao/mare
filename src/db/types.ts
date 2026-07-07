@@ -68,6 +68,14 @@ export interface NewBoard {
   volumeL?: number;
 }
 
+// Update input — same semantics as SpotChanges: undefined leaves a field
+// untouched, explicit null clears it to SQL NULL.
+export interface BoardChanges {
+  name?: string;
+  boardType?: BoardType | null;
+  volumeL?: number | null;
+}
+
 export interface Session {
   id: string;
   spotId: string;

@@ -137,4 +137,23 @@ describe('boardRepo', () => {
 
     expect(updated).toEqual({ ...created, updatedAt: 2_000 });
   });
+
+  test('(j) update clears boardType and volumeL to SQL NULL with explicit nulls', async () => {
+    const created = await repo.create({
+      name: "6'2 Lost Driver",
+      boardType: 'shortboard',
+      volumeL: 29.5,
+    });
+
+    deps.clock.value = 2_000;
+    const updated = await repo.update(created.id, { boardType: null, volumeL: null });
+
+    expect(updated).toEqual({
+      ...created,
+      boardType: null,
+      volumeL: null,
+      updatedAt: 2_000,
+    });
+    expect(await repo.getById(created.id)).toEqual(updated);
+  });
 });

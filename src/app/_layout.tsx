@@ -8,6 +8,8 @@ export default function RootLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="spot/novo" options={{ title: t.spots.newTitle }} />
       <Stack.Screen name="spot/[id]" options={{ title: t.spots.editTitle }} />
+      <Stack.Screen name="board/nova" options={{ title: t.boards.newTitle }} />
+      <Stack.Screen name="board/[id]" options={{ title: t.boards.editTitle }} />
     </Stack>
   );
 }

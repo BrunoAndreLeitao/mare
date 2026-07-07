@@ -5,8 +5,11 @@ export type CoordsError =
   | 'coordsOutOfRange'
   | 'coordsNullIsland';
 
-// Number() em vez de parseFloat: 'abc12' e '12abc' dão NaN → null, não um prefixo.
-export function parseCoordinate(input: string): number | null {
+// Parser decimal genérico (coordenadas, volume, …): trim, vírgula decimal →
+// ponto, Number() em vez de parseFloat ('abc12' e '12abc' dão NaN → null, não
+// um prefixo). A validação de domínio é a jusante, de cada chamador
+// (validateCoords para coordenadas, > 0 para volume).
+export function parseDecimal(input: string): number | null {
   const normalized = input.trim().replace(',', '.');
   if (normalized === '') return null;
   const value = Number(normalized);

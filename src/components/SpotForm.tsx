@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { t } from '../i18n';
-import { parseCoordinate, validateCoords } from '../utils/coords';
+import { parseDecimal, validateCoords } from '../utils/coords';
 
 export interface SpotFormValues {
   name: string;
@@ -53,8 +53,8 @@ export function SpotForm({ initial, submitLabel, externalError, onSubmit }: Prop
       setError(`${t.spots.name}: ${t.common.required}`);
       return;
     }
-    const latitude = parseCoordinate(lat);
-    const longitude = parseCoordinate(lon);
+    const latitude = parseDecimal(lat);
+    const longitude = parseDecimal(lon);
     if (latitude === null || longitude === null) {
       setError(t.spots.coordsNotNumeric);
       return;
