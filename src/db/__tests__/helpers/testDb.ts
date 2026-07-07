@@ -24,6 +24,20 @@ export class BetterSqliteDb implements SqlDb, MigrationDb {
   async getAllAsync<T>(source: string, params: SqlValue[]): Promise<T[]> {
     return this.db.prepare(source).all(...params) as T[];
   }
+
+  // better-sqlite3's native .transaction() is sync and cannot wrap awaited
+  // work, so we issue the statements directly. Its ops are synchronous under
+  // the async veneer, so BEGIN/COMMIT bracket them correctly.
+  async withTransactionAsync(task: () => Promise<void>): Promise<void> {
+    this.db.exec('BEGIN');
+    try {
+      await task();
+      this.db.exec('COMMIT');
+    } catch (error) {
+      this.db.exec('ROLLBACK');
+      throw error;
+    }
+  }
 }
 
 // Deterministic deps: sequential uuids, controllable clock.

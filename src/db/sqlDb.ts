@@ -9,6 +9,10 @@ export interface SqlDb {
   runAsync(source: string, params: SqlValue[]): Promise<{ changes: number }>;
   getFirstAsync<T>(source: string, params: SqlValue[]): Promise<T | null>;
   getAllAsync<T>(source: string, params: SqlValue[]): Promise<T[]>;
+  // Atomic multi-statement writes (session create = 2 inserts; invalidating
+  // update = sessions + session_conditions). expo's SQLiteDatabase satisfies
+  // this signature structurally; the test adapter wraps BEGIN/COMMIT/ROLLBACK.
+  withTransactionAsync(task: () => Promise<void>): Promise<void>;
 }
 
 // Injected by the composition point (expo-crypto / Date.now) so repositories
