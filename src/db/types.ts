@@ -76,6 +76,17 @@ export interface BoardChanges {
   volumeL?: number | null;
 }
 
+// Read-model the fetch worker consumes: the conditions repo joins sessions and
+// spots so ALL SQL stays in the repo layer (the worker gets lat/lon + the raw
+// epoch startedAt without touching SQL itself). startedAtUtc is the stored
+// epoch UTC, no timezone conversion — the provider builds the request from it.
+export interface FetchableSession {
+  sessionId: string;
+  latitude: number;
+  longitude: number;
+  startedAtUtc: number;
+}
+
 export interface Session {
   id: string;
   spotId: string;

@@ -1,5 +1,18 @@
-import { type RepoDeps, type SqlDb, type SqlValue } from '../sqlDb';
+import { buildSetClause } from '../setClause';
+import { type RepoDeps, type SqlDb } from '../sqlDb';
 import { type Crowd, type NewSession, type Rating, type Session } from '../types';
+
+// Field → column for the sessions table (drives buildSetClause). updated_at is
+// NOT here — it is metadata the repo bumps, not a caller-provided field.
+const SESSION_COLUMN_MAP: Record<keyof NewSession, string> = {
+  spotId: 'spot_id',
+  boardId: 'board_id',
+  startedAt: 'started_at',
+  durationMin: 'duration_min',
+  rating: 'rating',
+  crowd: 'crowd',
+  notes: 'notes',
+};
 
 // Not-found semantics: reads return null; mutations THROW if the id does not
 // exist — a missing id in a mutation is a caller bug, not a normal state.
@@ -52,48 +65,6 @@ export function rowToSession(row: SessionRow): Session {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
-}
-
-// Pure field→column mapping for the dynamic UPDATE. Kept out of the repo so it
-// is testable in isolation. `now` is always appended as updated_at; invalidation
-// of conditions is the repo's job (it needs the stored row to compare), not this.
-export function buildSessionSetClause(
-  changes: Partial<NewSession>,
-  now: number,
-): { clause: string; params: SqlValue[] } {
-  const sets: string[] = [];
-  const params: SqlValue[] = [];
-  if (changes.spotId !== undefined) {
-    sets.push('spot_id = ?');
-    params.push(changes.spotId);
-  }
-  if (changes.boardId !== undefined) {
-    sets.push('board_id = ?');
-    params.push(changes.boardId ?? null);
-  }
-  if (changes.startedAt !== undefined) {
-    sets.push('started_at = ?');
-    params.push(changes.startedAt);
-  }
-  if (changes.durationMin !== undefined) {
-    sets.push('duration_min = ?');
-    params.push(changes.durationMin ?? null);
-  }
-  if (changes.rating !== undefined) {
-    sets.push('rating = ?');
-    params.push(changes.rating);
-  }
-  if (changes.crowd !== undefined) {
-    sets.push('crowd = ?');
-    params.push(changes.crowd ?? null);
-  }
-  if (changes.notes !== undefined) {
-    sets.push('notes = ?');
-    params.push(changes.notes ?? null);
-  }
-  sets.push('updated_at = ?');
-  params.push(now);
-  return { clause: sets.join(', '), params };
 }
 
 // Resets every measured column to NULL and the fetch metadata to a fresh
@@ -164,12 +135,14 @@ export function createSessionRepo(db: SqlDb, deps: RepoDeps): SessionRepository 
         (changes.startedAt !== undefined && changes.startedAt !== current.startedAt) ||
         (changes.spotId !== undefined && changes.spotId !== current.spotId);
 
-      const { clause, params } = buildSessionSetClause(changes, deps.now());
+      const { clause, params } = buildSetClause(changes, SESSION_COLUMN_MAP);
+      // updated_at is the repo's bump, appended after the caller's fields.
+      const setClause = clause === '' ? 'updated_at = ?' : `${clause}, updated_at = ?`;
 
       await db.withTransactionAsync(async () => {
         const result = await db.runAsync(
-          `UPDATE sessions SET ${clause} WHERE id = ?`,
-          [...params, id],
+          `UPDATE sessions SET ${setClause} WHERE id = ?`,
+          [...params, deps.now(), id],
         );
         if (result.changes === 0) {
           throw new Error(`Session not found: ${id}`);

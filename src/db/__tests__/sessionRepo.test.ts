@@ -2,41 +2,11 @@ import Database from 'better-sqlite3';
 
 import { runMigrations } from '../migrationRunner';
 import { migrations } from '../migrations';
-import {
-  buildSessionSetClause,
-  createSessionRepo,
-  type SessionRepository,
-} from '../repositories/sessionRepo';
+import { createSessionRepo, type SessionRepository } from '../repositories/sessionRepo';
 import { BetterSqliteDb, makeDeps } from './helpers/testDb';
 
-// Pure function — no DB needed.
-describe('buildSessionSetClause', () => {
-  test('(a) mapeia só os campos fornecidos e acrescenta sempre updated_at', () => {
-    const { clause, params } = buildSessionSetClause({ rating: 4 }, 2_000);
-    expect(clause).toBe('rating = ?, updated_at = ?');
-    expect(params).toEqual([4, 2_000]);
-  });
-
-  test('(b) mapeia todos os campos por ordem determinística', () => {
-    const { clause, params } = buildSessionSetClause(
-      {
-        spotId: 'spot-2',
-        boardId: 'board-1',
-        startedAt: 111,
-        durationMin: 60,
-        rating: 5,
-        crowd: 2,
-        notes: 'glassy',
-      },
-      2_000,
-    );
-    expect(clause).toBe(
-      'spot_id = ?, board_id = ?, started_at = ?, duration_min = ?, rating = ?, crowd = ?, notes = ?, updated_at = ?',
-    );
-    expect(params).toEqual(['spot-2', 'board-1', 111, 60, 5, 2, 'glassy', 2_000]);
-  });
-});
-
+// buildSetClause (o antigo buildSessionSetClause, agora genérico) tem os seus
+// testes isolados em setClause.test.ts.
 describe('sessionRepo', () => {
   let raw: Database.Database;
   let deps: ReturnType<typeof makeDeps>;
@@ -151,7 +121,9 @@ describe('sessionRepo', () => {
 
     await repo.update(s.id, { startedAt: 111 }); // mesmo valor: sem invalidação
     expect(conditions(s.id)).toMatchObject({ fetch_status: 'ok', wave_height_m: 1.5 });
-    expect((await repo.getById(s.id))!.rating).toBe(5);
+    const after = (await repo.getById(s.id))!;
+    expect(after.rating).toBe(5);
+    expect(after.updatedAt).toBe(2_000); // o repo anexa updated_at fora do helper
 
     await expect(repo.update('nope', { rating: 3 })).rejects.toThrow('Session not found: nope');
   });
@@ -164,5 +136,14 @@ describe('sessionRepo', () => {
     expect(conditions(s.id)).toBeUndefined(); // CASCADE
 
     await expect(repo.delete('nope')).rejects.toThrow('Session not found: nope');
+  });
+
+  test('(e) create com spot_id inexistente faz rollback: zero linhas em sessions E session_conditions', async () => {
+    // FK ON: o insert em sessions falha; a transação desfaz e não deixa órfãos.
+    await expect(repo.create({ spotId: 'ghost', startedAt: 111, rating: 4 })).rejects.toThrow();
+    expect((raw.prepare('SELECT COUNT(*) AS n FROM sessions').get() as { n: number }).n).toBe(0);
+    expect(
+      (raw.prepare('SELECT COUNT(*) AS n FROM session_conditions').get() as { n: number }).n,
+    ).toBe(0);
   });
 });
