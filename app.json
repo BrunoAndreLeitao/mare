@@ -39,7 +39,8 @@
         {
           "locationWhenInUsePermission": "A Maré usa a tua localização apenas para preencher as coordenadas de um spot quando tocas em «Usar a minha localização»."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

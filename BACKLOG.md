@@ -48,7 +48,9 @@ Regras: trabalhar por ordem; uma fase só fecha quando a Definition of Done (DoD
 
 ## Fase 2 — Sessões + Condições (Semanas 3-5) ← coração do produto
 
-- [ ] P0 — Ecrã "Nova sessão": spot (último usado pré-selecionado), data/hora (default agora), rating 1-5 (estrelas grandes), prancha (opcional), duração (presets 30/60/90/120), notas. **Meta medida: registo completo em <30 s**
+- [x] P0 — Ecrã "Nova sessão": spot (último usado pré-selecionado), data/hora (default agora), rating 1-5 (estrelas grandes), prancha (opcional), duração (presets 30/60/90/120), notas. **Meta medida: registo completo em <30 s**
+  <!-- Progresso (2026-07-09, Tarefa 6 da Fase 2): DoD validado no dispositivo — registo instantâneo (insert local, sem rede), caminho comum em meia dúzia de toques. Decisões: getLastUsedSpotId no sessionRepo (ORDER BY created_at DESC, rowid DESC; +1 teste); data/hora por chips Agora/−1h/−2h/−3h + "Outra hora" via @react-native-community/datetimepicker (dep justificada: registar a hora certa na criação > corrigir depois; limites agora/−92d; two-step Android; API onValueChange/onDismiss — onChange está deprecated no 9.1.0); crowd fora do ecrã (a linha P0 não o lista; menos ruído nos 30s); rating obrigatório SEM default (um default de 3 envenenava os insights); duração por toggle (limpar não tem peso semântico — sem chip "—"); prancha com chip "Nenhuma" explícito; erros com donos: validação sob o campo (ratingRequired sob as estrelas), sistema junto ao botão; scrollTo até ao campo em falta escrito mas NÃO validado no dispositivo do Bruno (ecrã dele mostra tudo — fica para ecrãs menores, não é "bug corrigido"). O create NÃO dispara o worker: condições ficam pending até aos triggers da Tarefa 8. -->
+
 - [ ] P0 — Transação de criação: `sessions` + `session_conditions(pending)` (ver DATABASE.md §Regras)
 - [ ] P0 — `OpenMeteoProvider` conforme `docs/OPEN_METEO.md` (marine + wind em paralelo, tipos, null-safety)
 - [ ] P0 — Matching de hora + derivação de `tide_phase` — **com testes** (XX:29/XX:31, limites do array, delta >90 min)

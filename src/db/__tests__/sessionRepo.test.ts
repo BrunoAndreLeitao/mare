@@ -138,6 +138,15 @@ describe('sessionRepo', () => {
     await expect(repo.delete('nope')).rejects.toThrow('Session not found: nope');
   });
 
+  test('(f) getLastUsedSpotId devolve o spot do registo mais recente; null sem sessões', async () => {
+    expect(await repo.getLastUsedSpotId()).toBeNull();
+
+    await repo.create({ spotId: 'spot-1', startedAt: 500, rating: 4 });
+    // Mesmo created_at (clock parado): o rowid desempata pela ordem de inserção.
+    await repo.create({ spotId: 'spot-2', startedAt: 100, rating: 3 });
+    expect(await repo.getLastUsedSpotId()).toBe('spot-2'); // último REGISTADO, não último surfado
+  });
+
   test('(e) create com spot_id inexistente faz rollback: zero linhas em sessions E session_conditions', async () => {
     // FK ON: o insert em sessions falha; a transação desfaz e não deixa órfãos.
     await expect(repo.create({ spotId: 'ghost', startedAt: 111, rating: 4 })).rejects.toThrow();

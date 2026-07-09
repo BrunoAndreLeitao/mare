@@ -24,6 +24,8 @@ export interface SessionRepository {
    */
   create(input: NewSession): Promise<Session>;
   getById(id: string): Promise<Session | null>;
+  /** Spot da sessão registada mais recentemente (pré-seleção no ecrã Nova sessão); null sem sessões. */
+  getLastUsedSpotId(): Promise<string | null>;
   // listWithDetails: nasce na Tarefa 7 (histórico), com a query de JOINs (3
   // tabelas) e o mapeador de SessionListItem desenhados juntos. Não especular
   // a forma aqui.
@@ -125,6 +127,16 @@ export function createSessionRepo(db: SqlDb, deps: RepoDeps): SessionRepository 
     },
 
     getById,
+
+    async getLastUsedSpotId(): Promise<string | null> {
+      // rowid como desempate: created_at tem resolução de segundos e dois
+      // registos seguidos podem colidir; rowid preserva a ordem de inserção.
+      const row = await db.getFirstAsync<{ spot_id: string }>(
+        'SELECT spot_id FROM sessions ORDER BY created_at DESC, rowid DESC LIMIT 1',
+        [],
+      );
+      return row === null ? null : row.spot_id;
+    },
 
     async update(id: string, changes: Partial<NewSession>): Promise<Session> {
       const current = await getById(id);
