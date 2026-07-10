@@ -11,6 +11,7 @@ export default function RootLayout() {
       <Stack.Screen name="board/nova" options={{ title: t.boards.newTitle }} />
       <Stack.Screen name="board/[id]" options={{ title: t.boards.editTitle }} />
       <Stack.Screen name="sessao/nova" options={{ title: t.sessions.newTitle }} />
+      <Stack.Screen name="sessao/[id]" options={{ title: t.sessions.detailTitle }} />
     </Stack>
   );
 }

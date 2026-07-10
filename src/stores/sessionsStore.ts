@@ -1,22 +1,71 @@
 import { create } from 'zustand';
 
-import { getSessionRepo } from '../db';
-import { type NewSession, type Session } from '../db/types';
+import { getConditionsRepo, getSessionRepo } from '../db';
+import {
+  type NewSession,
+  type Session,
+  type SessionConditions,
+  type SessionListItem,
+} from '../db/types';
 import { t } from '../i18n';
 
 // Mesmo padrão das outras stores: repo por ação, try/catch → error em todas.
-// Sem lista — o histórico (listWithDetails) nasce na Tarefa 7.
+// Reatividade (decisão V3 da Tarefa 7): a lista recarrega em focus/pull; a
+// Tarefa 8 chama load() no ponto de composição após cada corrida do worker
+// com mudanças — o ponto de composição É o evento; sem emitter, sem polling.
 interface SessionsState {
+  sessions: SessionListItem[];
+  loading: boolean;
   error: string | null;
   lastUsedSpotId: string | null;
+  // ponytail: LIMIT 50 fixo — paging por OFFSET quando alguém passar 50 sessões.
+  load(): Promise<void>;
   loadLastUsedSpot(): Promise<void>;
   /** Returns the created session, or null on failure (error is set). */
   create(input: NewSession): Promise<Session | null>;
+  /** "Tentar de novo": resetRetries + reload. Returns false on failure. */
+  retryConditions(sessionId: string): Promise<boolean>;
+  /** Detalhe: condições completas de uma sessão (null em falha; error é setado). */
+  getConditions(sessionId: string): Promise<SessionConditions | null>;
 }
 
-export const useSessionsStore = create<SessionsState>()((set) => ({
+export const useSessionsStore = create<SessionsState>()((set, get) => ({
+  sessions: [],
+  loading: false,
   error: null,
   lastUsedSpotId: null,
+
+  async load() {
+    set({ loading: true, error: null });
+    try {
+      const repo = await getSessionRepo();
+      set({ sessions: await repo.listWithDetails(50, 0), loading: false });
+    } catch {
+      set({ loading: false, error: t.common.genericError });
+    }
+  },
+
+  async retryConditions(sessionId) {
+    try {
+      const repo = await getConditionsRepo();
+      await repo.resetRetries(sessionId);
+      await get().load(); // o cartão volta a "a obter…"; o refetch real é da Tarefa 8
+      return true;
+    } catch {
+      set({ error: t.common.genericError });
+      return false;
+    }
+  },
+
+  async getConditions(sessionId) {
+    try {
+      const repo = await getConditionsRepo();
+      return await repo.getBySessionId(sessionId);
+    } catch {
+      set({ error: t.common.genericError });
+      return null;
+    }
+  },
 
   async loadLastUsedSpot() {
     try {

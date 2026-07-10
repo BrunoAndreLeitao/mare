@@ -161,10 +161,12 @@ export interface SessionConditions {
 // docs/DATABASE.md (JOIN spots, LEFT JOIN boards, LEFT JOIN conditions).
 // fetchStatus is non-null because a conditions row is created in the same
 // transaction as the session (docs/DATABASE.md §Regras 1).
+// swellHeightM (not waveHeightM): validated product call — total height
+// misleads at Carcavelos; swell+period is the discriminating pair (see doc).
 export interface SessionListItem extends Session {
   spotName: string;
   boardName: string | null;
-  waveHeightM: number | null;
+  swellHeightM: number | null;
   swellPeriodS: number | null;
   windSpeedKmh: number | null;
   windDirectionDeg: number | null;

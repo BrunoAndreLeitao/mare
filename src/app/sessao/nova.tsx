@@ -8,6 +8,7 @@ import { Button, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from
 
 import { type Rating } from '../../db/types';
 import { t } from '../../i18n';
+import { fmtLocal } from '../../utils/format';
 import { useBoardsStore } from '../../stores/boardsStore';
 import { useSessionsStore } from '../../stores/sessionsStore';
 import { useSpotsStore } from '../../stores/spotsStore';
@@ -15,10 +16,6 @@ import { useSpotsStore } from '../../stores/spotsStore';
 const OFFSETS = [0, 1, 2, 3] as const;
 const DURATIONS = [30, 60, 90, 120] as const;
 const MAX_PAST_DAYS = 92; // teto do past_days da Open-Meteo (docs/OPEN_METEO.md §4)
-
-const two = (n: number) => String(n).padStart(2, '0');
-const fmtLocal = (d: Date) =>
-  `${two(d.getDate())}/${two(d.getMonth() + 1)} ${two(d.getHours())}:${two(d.getMinutes())}`;
 
 function Chip({
   label,

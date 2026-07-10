@@ -1,4 +1,4 @@
-import { type BoardType } from '../db/types';
+import { type BoardType, type TidePhase } from '../db/types';
 
 // Strings de UI em pt-PT (CLAUDE.md): todo o texto visível vive aqui, nunca
 // hardcoded nos componentes. Um futuro 'en' troca este objeto, não a
@@ -34,6 +34,31 @@ export const t = {
     notes: 'Notas',
     notesPlaceholder: 'Como estava o mar? Melhor onda?…',
     noSpots: 'Cria primeiro um spot para registares sessões.',
+    detailTitle: 'Sessão',
+    conditionsPending: 'Condições a obter…',
+    conditionsUnavailable: 'Condições indisponíveis',
+    retryFetch: 'Tentar de novo',
+    conditionsTitle: 'Condições',
+    tide: {
+      rising: 'a encher',
+      falling: 'a vazar',
+      high: 'preia-mar',
+      low: 'baixa-mar',
+    } satisfies Record<TidePhase, string>,
+    detail: {
+      swell: 'Swell',
+      swellDirection: 'Direção do swell',
+      period: 'Período',
+      peakPeriod: 'Período de pico',
+      wave: 'Mar total',
+      windWave: 'Vaga de vento',
+      wind: 'Vento',
+      gusts: 'Rajadas',
+      windDirection: 'Direção do vento',
+      waterTemp: 'Água',
+      seaLevel: 'Nível do mar (MSL)',
+      tidePhase: 'Maré',
+    },
   },
   spots: {
     listTitle: 'Spots',

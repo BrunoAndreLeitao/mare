@@ -119,7 +119,7 @@ CREATE INDEX idx_conditions_status ON session_conditions(fetch_status);
 **Histórico (ecrã principal):**
 ```sql
 SELECT s.*, sp.name AS spot_name, b.name AS board_name,
-       c.wave_height_m, c.swell_period_s, c.wind_speed_kmh,
+       c.swell_height_m, c.swell_period_s, c.wind_speed_kmh,
        c.wind_direction_deg, c.tide_phase, c.fetch_status
 FROM sessions s
 JOIN spots sp ON sp.id = s.spot_id
@@ -128,6 +128,8 @@ LEFT JOIN session_conditions c ON c.session_id = s.id
 ORDER BY s.started_at DESC
 LIMIT 50 OFFSET ?;
 ```
+
+> **Nota (2026-07-10):** o resumo usa `swell_height_m`, não `wave_height_m` — correção de produto validada com dados reais de Carcavelos: a altura total enganou (0.64 m num dia flat de 4.3 s vs 0.90 m num ground swell de 15.25 s), porque mistura marulho de vento com ondulação de fundo. O par swell+período é o que discrimina a qualidade; a altura total continua guardada em `session_conditions` para os insights finos.
 
 **Insight básico por spot (Fase 4 — perfil das boas sessões):**
 ```sql

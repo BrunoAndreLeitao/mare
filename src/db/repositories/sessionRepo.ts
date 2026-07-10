@@ -1,6 +1,14 @@
 import { buildSetClause } from '../setClause';
 import { type RepoDeps, type SqlDb } from '../sqlDb';
-import { type Crowd, type NewSession, type Rating, type Session } from '../types';
+import {
+  type Crowd,
+  type FetchStatus,
+  type NewSession,
+  type Rating,
+  type Session,
+  type SessionListItem,
+  type TidePhase,
+} from '../types';
 
 // Field → column for the sessions table (drives buildSetClause). updated_at is
 // NOT here — it is metadata the repo bumps, not a caller-provided field.
@@ -26,9 +34,9 @@ export interface SessionRepository {
   getById(id: string): Promise<Session | null>;
   /** Spot da sessão registada mais recentemente (pré-seleção no ecrã Nova sessão); null sem sessões. */
   getLastUsedSpotId(): Promise<string | null>;
-  // listWithDetails: nasce na Tarefa 7 (histórico), com a query de JOINs (3
-  // tabelas) e o mapeador de SessionListItem desenhados juntos. Não especular
-  // a forma aqui.
+  /** History screen rows — the reference query in docs/DATABASE.md (JOIN spots,
+   * LEFT JOIN boards, LEFT JOIN conditions), ordered by started_at DESC. */
+  listWithDetails(limit: number, offset: number): Promise<SessionListItem[]>;
   /**
    * Changing startedAt or spotId invalidates conditions: fetch_status back to
    * 'pending', retry_count=0, values cleared — enforced here in the repo, not
@@ -66,6 +74,43 @@ export function rowToSession(row: SessionRow): Session {
     notes: row.notes,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+// Row of the 3-way history JOIN (docs/DATABASE.md reference query). Own shape,
+// own mapper — NOT rowToSession: this row carries aliased columns of 3 tables.
+export interface SessionListRow extends SessionRow {
+  spot_name: string;
+  board_name: string | null;
+  swell_height_m: number | null;
+  swell_period_s: number | null;
+  wind_speed_kmh: number | null;
+  wind_direction_deg: number | null;
+  tide_phase: string | null;
+  fetch_status: string;
+}
+
+// Exported for isolated testing (vinculativo da Tarefa 7).
+export function rowToSessionListItem(row: SessionListRow): SessionListItem {
+  return {
+    id: row.id,
+    spotId: row.spot_id,
+    boardId: row.board_id,
+    startedAt: row.started_at,
+    durationMin: row.duration_min,
+    rating: row.rating as Rating,
+    crowd: row.crowd as Crowd | null,
+    notes: row.notes,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    spotName: row.spot_name,
+    boardName: row.board_name,
+    swellHeightM: row.swell_height_m,
+    swellPeriodS: row.swell_period_s,
+    windSpeedKmh: row.wind_speed_kmh,
+    windDirectionDeg: row.wind_direction_deg,
+    tidePhase: row.tide_phase as TidePhase | null,
+    fetchStatus: row.fetch_status as FetchStatus,
   };
 }
 
@@ -127,6 +172,24 @@ export function createSessionRepo(db: SqlDb, deps: RepoDeps): SessionRepository 
     },
 
     getById,
+
+    async listWithDetails(limit: number, offset: number): Promise<SessionListItem[]> {
+      // JOIN spots SEM filtro de is_archived: um spot arquivado continua no
+      // histórico — é a razão de ser do soft delete (docs/DATABASE.md §Regras 4).
+      const rows = await db.getAllAsync<SessionListRow>(
+        `SELECT s.*, sp.name AS spot_name, b.name AS board_name,
+                c.swell_height_m, c.swell_period_s, c.wind_speed_kmh,
+                c.wind_direction_deg, c.tide_phase, c.fetch_status
+         FROM sessions s
+         JOIN spots sp ON sp.id = s.spot_id
+         LEFT JOIN boards b ON b.id = s.board_id
+         LEFT JOIN session_conditions c ON c.session_id = s.id
+         ORDER BY s.started_at DESC
+         LIMIT ? OFFSET ?`,
+        [limit, offset],
+      );
+      return rows.map(rowToSessionListItem);
+    },
 
     async getLastUsedSpotId(): Promise<string | null> {
       // rowid como desempate: created_at tem resolução de segundos e dois

@@ -51,13 +51,20 @@ Regras: trabalhar por ordem; uma fase só fecha quando a Definition of Done (DoD
 - [x] P0 — Ecrã "Nova sessão": spot (último usado pré-selecionado), data/hora (default agora), rating 1-5 (estrelas grandes), prancha (opcional), duração (presets 30/60/90/120), notas. **Meta medida: registo completo em <30 s**
   <!-- Progresso (2026-07-09, Tarefa 6 da Fase 2): DoD validado no dispositivo — registo instantâneo (insert local, sem rede), caminho comum em meia dúzia de toques. Decisões: getLastUsedSpotId no sessionRepo (ORDER BY created_at DESC, rowid DESC; +1 teste); data/hora por chips Agora/−1h/−2h/−3h + "Outra hora" via @react-native-community/datetimepicker (dep justificada: registar a hora certa na criação > corrigir depois; limites agora/−92d; two-step Android; API onValueChange/onDismiss — onChange está deprecated no 9.1.0); crowd fora do ecrã (a linha P0 não o lista; menos ruído nos 30s); rating obrigatório SEM default (um default de 3 envenenava os insights); duração por toggle (limpar não tem peso semântico — sem chip "—"); prancha com chip "Nenhuma" explícito; erros com donos: validação sob o campo (ratingRequired sob as estrelas), sistema junto ao botão; scrollTo até ao campo em falta escrito mas NÃO validado no dispositivo do Bruno (ecrã dele mostra tudo — fica para ecrãs menores, não é "bug corrigido"). O create NÃO dispara o worker: condições ficam pending até aos triggers da Tarefa 8. -->
 
-- [ ] P0 — Transação de criação: `sessions` + `session_conditions(pending)` (ver DATABASE.md §Regras)
-- [ ] P0 — `OpenMeteoProvider` conforme `docs/OPEN_METEO.md` (marine + wind em paralelo, tipos, null-safety)
-- [ ] P0 — Matching de hora + derivação de `tide_phase` — **com testes** (XX:29/XX:31, limites do array, delta >90 min)
+- [x] P0 — Transação de criação: `sessions` + `session_conditions(pending)` (ver DATABASE.md §Regras)
+  <!-- Tarefa 1 da fase, commit 3e77979: withTransactionAsync no SqlDb; invalidação por comparação; buildSetClause genérico (325ceab); teste de rollback FK. -->
+- [x] P0 — `OpenMeteoProvider` conforme `docs/OPEN_METEO.md` (marine + wind em paralelo, tipos, null-safety)
+  <!-- Tarefa 3, commit 2dc4bde: fetch injetável, permanent só em 400, fixtures reais de 3 dias de Carcavelos; smoke on-device passado. -->
+- [x] P0 — Matching de hora + derivação de `tide_phase` — **com testes** (XX:29/XX:31, limites do array, delta >90 min)
+  <!-- Tarefa 4, commit 8a6acea: empate→anterior por regra explícita; tide_phase=null nos bordos (etiqueta errada ≠ parcial — confirmado com preia-mar real de 30/04 13:00); WET/WEST 2026 testado. -->
 - [ ] P0 — Fila de pendentes com triggers (arranque, netinfo, pull-to-refresh) e retry_count
-- [ ] P1 — Cache de dia em memória (OPEN_METEO.md §7)
+  <!-- Parcial (Tarefa 5, commit a8e1392): worker core por composição feito (allSettled, parciais por ordem saveSnapshot→markFailed, AND no both-failed, cache de dia, ~300ms). FALTAM os triggers reais + guarda de reentrância — Tarefa 8. -->
+- [x] P1 — Cache de dia em memória (OPEN_METEO.md §7)
+  <!-- Tarefa 5: 2 Maps por metade, só sucessos, chave com AMBAS as coords a 2 casas (gralha do §7 corrigida). -->
 - [ ] P1 — Editar sessão (mudança de hora/spot invalida condições e re-agenda fetch — **com teste**)
-- [ ] P1 — Estado visual das condições no cartão de sessão: a obter… / ok / indisponível + retry manual
+  <!-- A invalidação no repo já existe com teste (Tarefa 1); falta a UI de edição. -->
+- [x] P1 — Estado visual das condições no cartão de sessão: a obter… / ok / indisponível + retry manual
+  <!-- Tarefa 7 (2026-07-10): cartão com 3 estados — pending discreto ("Condições a obter…"), ok em DUAS linhas (sinal swell+período destacado / contexto vento+maré cinza — o período é a variável discriminante validada), failed + "Tentar de novo" (resetRetries; refetch real na Tarefa 8). Campo em falta em linha renderizada mostra "—" (ausência explícita); linha toda em falta não renderiza. listWithDetails nasceu aqui: JOIN de 3 tabelas + rowToSessionListItem próprio testado isolado; swell_height_m no lugar de wave_height_m (correção de produto validada — ver nota no DATABASE.md); spot arquivado continua no histórico (testado). LIMITAÇÃO (até à Tarefa 8): com a lista em foco, mudanças do worker só aparecem ao sair/voltar ou pull-to-refresh — o reload pós-worker liga-se no ponto de composição da Tarefa 8; não é comportamento final. -->
 - [ ] P2 — Apagar sessão com undo (snackbar 5 s)
 
 **DoD:** registar sessão em modo avião → condições chegam sozinhas ao voltar o Wi-Fi; valores conferidos manualmente contra open-meteo.com para o mesmo dia/hora/coordenadas; testes do matching verdes.

@@ -2,7 +2,12 @@ import Database from 'better-sqlite3';
 
 import { runMigrations } from '../migrationRunner';
 import { migrations } from '../migrations';
-import { createSessionRepo, type SessionRepository } from '../repositories/sessionRepo';
+import {
+  createSessionRepo,
+  rowToSessionListItem,
+  type SessionListRow,
+  type SessionRepository,
+} from '../repositories/sessionRepo';
 import { BetterSqliteDb, makeDeps } from './helpers/testDb';
 
 // buildSetClause (o antigo buildSessionSetClause, agora genérico) tem os seus
@@ -145,6 +150,107 @@ describe('sessionRepo', () => {
     // Mesmo created_at (clock parado): o rowid desempata pela ordem de inserção.
     await repo.create({ spotId: 'spot-2', startedAt: 100, rating: 3 });
     expect(await repo.getLastUsedSpotId()).toBe('spot-2'); // último REGISTADO, não último surfado
+  });
+
+  test('(g) rowToSessionListItem mapeia o row do JOIN de 3 tabelas (forma própria, não rowToSession)', () => {
+    const row: SessionListRow = {
+      id: 's-1',
+      spot_id: 'spot-1',
+      board_id: 'board-1',
+      started_at: 111,
+      duration_min: 90,
+      rating: 5,
+      crowd: 2,
+      notes: 'glassy',
+      created_at: 10,
+      updated_at: 20,
+      spot_name: 'Carcavelos',
+      board_name: "6'2 Lost Driver",
+      swell_height_m: 0.9,
+      swell_period_s: 15.25,
+      wind_speed_kmh: 16.9,
+      wind_direction_deg: 322,
+      tide_phase: 'falling',
+      fetch_status: 'ok',
+    };
+    expect(rowToSessionListItem(row)).toEqual({
+      id: 's-1',
+      spotId: 'spot-1',
+      boardId: 'board-1',
+      startedAt: 111,
+      durationMin: 90,
+      rating: 5,
+      crowd: 2,
+      notes: 'glassy',
+      createdAt: 10,
+      updatedAt: 20,
+      spotName: 'Carcavelos',
+      boardName: "6'2 Lost Driver",
+      swellHeightM: 0.9,
+      swellPeriodS: 15.25,
+      windSpeedKmh: 16.9,
+      windDirectionDeg: 322,
+      tidePhase: 'falling',
+      fetchStatus: 'ok',
+    });
+  });
+
+  test('(h) listWithDetails junta spot, board (LEFT) e resumo de condições com fetch_status', async () => {
+    const withBoard = await repo.create({
+      spotId: 'spot-1',
+      boardId: 'board-1',
+      startedAt: 2_000,
+      rating: 5,
+    });
+    await repo.create({ spotId: 'spot-2', startedAt: 1_000, rating: 3 });
+    raw
+      .prepare(
+        `UPDATE session_conditions SET fetch_status='ok', swell_height_m=0.9,
+           swell_period_s=15.25, wind_speed_kmh=16.9, wind_direction_deg=322,
+           tide_phase='falling' WHERE session_id=?`,
+      )
+      .run(withBoard.id);
+
+    const items = await repo.listWithDetails(50, 0);
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatchObject({
+      id: withBoard.id,
+      spotName: 'Carcavelos',
+      boardName: "6'2 Lost Driver",
+      swellHeightM: 0.9,
+      swellPeriodS: 15.25,
+      windSpeedKmh: 16.9,
+      tidePhase: 'falling',
+      fetchStatus: 'ok',
+    });
+    expect(items[1]).toMatchObject({
+      spotName: 'Ericeira',
+      boardName: null, // LEFT JOIN: sessão sem prancha
+      swellHeightM: null,
+      fetchStatus: 'pending', // nasce com a sessão
+    });
+  });
+
+  test('(i) listWithDetails ordena por started_at DESC (hora de surf, não de registo) e pagina', async () => {
+    // Registadas por esta ordem, mas surfadas noutra: a retroativa vai para o fim.
+    await repo.create({ spotId: 'spot-1', startedAt: 5_000, rating: 4 });
+    await repo.create({ spotId: 'spot-1', startedAt: 1_000, rating: 4 }); // retroativa
+    await repo.create({ spotId: 'spot-1', startedAt: 9_000, rating: 4 });
+
+    const all = await repo.listWithDetails(50, 0);
+    expect(all.map((s) => s.startedAt)).toEqual([9_000, 5_000, 1_000]);
+
+    expect((await repo.listWithDetails(2, 0)).map((s) => s.startedAt)).toEqual([9_000, 5_000]);
+    expect((await repo.listWithDetails(2, 2)).map((s) => s.startedAt)).toEqual([1_000]);
+  });
+
+  test('(j) spot arquivado continua no histórico — a razão de ser do soft delete', async () => {
+    await repo.create({ spotId: 'spot-1', startedAt: 111, rating: 4 });
+    raw.prepare("UPDATE spots SET is_archived=1 WHERE id='spot-1'").run();
+
+    const items = await repo.listWithDetails(50, 0);
+    expect(items).toHaveLength(1);
+    expect(items[0].spotName).toBe('Carcavelos');
   });
 
   test('(e) create com spot_id inexistente faz rollback: zero linhas em sessions E session_conditions', async () => {
