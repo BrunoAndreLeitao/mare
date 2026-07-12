@@ -1,8 +1,28 @@
+import NetInfo from '@react-native-community/netinfo';
 import { Stack } from 'expo-router';
+import { useEffect } from 'react';
 
 import { t } from '../i18n';
+import { runPendingQueue } from '../services/openmeteo/runner';
 
 export default function RootLayout() {
+  useEffect(() => {
+    // Trigger 1: arranque da app (docs/OPEN_METEO.md §6).
+    runPendingQueue().catch((e) => console.warn('[worker] trigger arranque:', e));
+
+    // Trigger 2: transição offline→online — SÓ a transição (o netinfo emite em
+    // cada mudança; wasConnected===false filtra o evento inicial e duplicados).
+    let wasConnected: boolean | null = null;
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      const connected = state.isConnected ?? false;
+      if (connected && wasConnected === false) {
+        runPendingQueue().catch((e) => console.warn('[worker] trigger netinfo:', e));
+      }
+      wasConnected = connected;
+    });
+    return unsubscribe;
+  }, []);
+
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

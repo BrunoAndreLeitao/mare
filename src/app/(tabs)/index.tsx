@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Button, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { type SessionListItem } from '../../db/types';
 import { t } from '../../i18n';
+import { runPendingQueue } from '../../services/openmeteo/runner';
 import { useSessionsStore } from '../../stores/sessionsStore';
 import { degToCardinal } from '../../utils/directions';
 import { fmtLocal } from '../../utils/format';
@@ -101,10 +102,23 @@ function SessionCard({
 
 export default function SessionsScreen() {
   const sessions = useSessionsStore((s) => s.sessions);
-  const loading = useSessionsStore((s) => s.loading);
   const error = useSessionsStore((s) => s.error);
   const load = useSessionsStore((s) => s.load);
   const retryConditions = useSessionsStore((s) => s.retryConditions);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Trigger 3: pull-to-refresh corre o worker E recarrega (o load final
+  // garante lista fresca mesmo sem mudanças); spinner cobre a corrida toda.
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await runPendingQueue();
+    } catch (e) {
+      console.warn('[worker] trigger pull:', e);
+    }
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
   // Reatividade V3: recarrega ao ganhar foco (voltar do registo mostra a
   // sessão nova sem gesto). Limitação conhecida até à Tarefa 8: mudanças do
@@ -121,7 +135,7 @@ export default function SessionsScreen() {
       <FlatList
         data={sessions}
         keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load()} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} />}
         contentContainerStyle={sessions.length === 0 ? styles.emptyContainer : undefined}
         ListEmptyComponent={
           <View style={styles.emptyBody}>

@@ -8,6 +8,7 @@ import { Button, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from
 
 import { type Rating } from '../../db/types';
 import { t } from '../../i18n';
+import { runPendingQueue } from '../../services/openmeteo/runner';
 import { fmtLocal } from '../../utils/format';
 import { useBoardsStore } from '../../stores/boardsStore';
 import { useSessionsStore } from '../../stores/sessionsStore';
@@ -109,6 +110,9 @@ export default function NewSessionScreen() {
       notes: trimmedNotes === '' ? undefined : trimmedNotes,
     });
     if (session !== null) {
+      // Trigger 4 (extensão ao §6 aprovada): registar É o momento em que o
+      // utilizador quer as condições; a guarda singleFlight torna-o seguro.
+      runPendingQueue().catch((e) => console.warn('[worker] trigger pós-create:', e));
       router.back();
     }
   }
