@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Button, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { type SessionListItem } from '../../db/types';
 import { t } from '../../i18n';
@@ -9,6 +9,7 @@ import { runPendingQueue } from '../../services/openmeteo/runner';
 import { useSessionsStore } from '../../stores/sessionsStore';
 import { degToCardinal } from '../../utils/directions';
 import { fmtLocal } from '../../utils/format';
+import { colors, font, radius, space } from '../../theme';
 
 // Campo em falta DENTRO de linha renderizada mostra "—" (ausência explícita,
 // não silenciosa); linha inteira em falta não renderiza.
@@ -22,7 +23,7 @@ function Stars({ rating }: { rating: number }) {
           key={v}
           name={v <= rating ? 'star' : 'star-outline'}
           size={14}
-          color={v <= rating ? '#f5a623' : '#ccc'}
+          color={v <= rating ? colors.accent : colors.starEmpty}
         />
       ))}
     </View>
@@ -148,36 +149,48 @@ export default function SessionsScreen() {
         )}
       />
       <View style={styles.footer}>
-        <Button title={t.sessions.register} onPress={() => router.push('/sessao/nova')} />
+        <Pressable style={styles.registerButton} onPress={() => router.push('/sessao/nova')}>
+          <Text style={styles.registerButtonLabel}>{t.sessions.register}</Text>
+        </Pressable>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: colors.background },
   emptyContainer: { flex: 1 },
-  emptyBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 24 },
-  emptyTitle: { fontSize: 18, fontWeight: '600' },
-  emptyText: { textAlign: 'center', color: '#666' },
+  emptyBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.sm, padding: space.lg },
+  emptyTitle: { fontFamily: font.displayMediumItalic, fontSize: 22, color: colors.ink },
+  emptyText: { textAlign: 'center', fontFamily: font.body, fontSize: 15, color: colors.inkMuted },
   card: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ccc',
-    gap: 4,
+    marginHorizontal: space.md,
+    marginTop: space.sm,
+    padding: space.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    gap: space.xs,
   },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  spotName: { fontSize: 16, fontWeight: '600' },
-  when: { fontSize: 13, color: '#666' },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  spotName: { fontFamily: font.displaySemiBold, fontSize: 17, color: colors.ink },
+  when: { fontFamily: font.body, fontSize: 13, color: colors.inkMuted },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   stars: { flexDirection: 'row', gap: 1 },
-  meta: { fontSize: 13, color: '#666' },
-  condQuiet: { fontSize: 13, color: '#888' },
-  condSignal: { fontSize: 14, fontWeight: '600', color: '#1a1a1a' },
-  condContext: { fontSize: 13, color: '#666' },
+  meta: { fontFamily: font.body, fontSize: 13, color: colors.inkMuted },
+  condQuiet: { fontFamily: font.body, fontStyle: 'italic', fontSize: 13, color: colors.pending },
+  condSignal: { fontFamily: font.monoMedium, fontSize: 17, color: colors.ink },
+  condContext: { fontFamily: font.mono, fontSize: 13, color: colors.inkMuted },
   failedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  retry: { fontSize: 13, color: '#208AEF', fontWeight: '600' },
-  footer: { padding: 16 },
-  error: { color: '#c0392b', padding: 16 },
+  retry: { fontFamily: font.bodySemiBold, fontSize: 13, color: colors.accent, textDecorationLine: 'underline' },
+  footer: { padding: space.md },
+  registerButton: {
+    backgroundColor: colors.accent,
+    borderRadius: radius.input,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  registerButtonLabel: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.accentOn },
+  error: { fontFamily: font.body, color: colors.error, padding: space.md },
 });

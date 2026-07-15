@@ -6,6 +6,10 @@ Diário de surf onde o utilizador regista uma sessão em **menos de 30 segundos*
 
 **Proposta de valor numa frase:** o Surfline diz como vai estar o mar; a Maré diz como TU surfas nesse mar.
 
+## Design System
+
+Ler sempre `DESIGN.md` antes de decisões visuais ou de UI. Paleta, tipografia, espaçamento e direção estética estão todos definidos lá ("Diário de Bordo" — logbook náutico, papel quente + tinta azul-marinho + acento laranja queimado, Fraunces/Instrument Sans/JetBrains Mono). Não desviar sem aprovação explícita do utilizador.
+
 ## Princípios inegociáveis
 
 1. **Registo em 30 segundos.** Qualquer feature que adicione fricção ao registo é rejeitada por defeito. O utilizador dá o subjetivo (rating); a API dá o objetivo (condições).

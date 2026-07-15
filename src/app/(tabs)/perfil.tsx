@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import { useEffect } from 'react';
-import { Button, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { t } from '../../i18n';
 import { useBoardsStore } from '../../stores/boardsStore';
+import { colors, font, radius, space } from '../../theme';
 
 export default function ProfileScreen() {
   const boards = useBoardsStore((s) => s.boards);
@@ -40,26 +41,41 @@ export default function ProfileScreen() {
         }}
       />
       <View style={styles.footer}>
-        <Button title={t.boards.create} onPress={() => router.push('/board/nova')} />
+        <Pressable style={styles.addButton} onPress={() => router.push('/board/nova')}>
+          <Text style={styles.addButtonLabel}>{t.boards.create}</Text>
+        </Pressable>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  section: { fontSize: 20, fontWeight: '700', paddingHorizontal: 16, paddingTop: 16 },
-  emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  empty: { textAlign: 'center', color: '#666' },
+  container: { flex: 1, backgroundColor: colors.background },
+  section: {
+    fontFamily: font.displaySemiBold,
+    fontSize: 22,
+    color: colors.ink,
+    paddingHorizontal: space.md,
+    paddingTop: space.md,
+  },
+  emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.lg },
+  empty: { textAlign: 'center', fontFamily: font.body, color: colors.inkMuted },
   row: {
-    paddingHorizontal: 16,
+    paddingHorizontal: space.md,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ccc',
+    borderBottomColor: colors.hairline,
     gap: 2,
   },
-  name: { fontSize: 16, fontWeight: '600' },
-  details: { fontSize: 13, color: '#666' },
-  footer: { padding: 16 },
-  error: { color: '#c0392b', padding: 16 },
+  name: { fontFamily: font.displaySemiBold, fontSize: 16, color: colors.ink },
+  details: { fontFamily: font.mono, fontSize: 13, color: colors.inkMuted },
+  footer: { padding: space.md },
+  addButton: {
+    backgroundColor: colors.accent,
+    borderRadius: radius.input,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  addButtonLabel: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.accentOn },
+  error: { fontFamily: font.body, color: colors.error, padding: space.md },
 });

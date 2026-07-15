@@ -8,6 +8,7 @@ import { t } from '../../i18n';
 import { useSessionsStore } from '../../stores/sessionsStore';
 import { degToCardinal } from '../../utils/directions';
 import { fmtLocal } from '../../utils/format';
+import { colors, font, radius, space } from '../../theme';
 
 const DASH = '—';
 
@@ -58,7 +59,7 @@ export default function SessionDetailScreen() {
               key={v}
               name={v <= session.rating ? 'star' : 'star-outline'}
               size={20}
-              color={v <= session.rating ? '#f5a623' : '#ccc'}
+              color={v <= session.rating ? colors.accent : colors.starEmpty}
             />
           ))}
         </View>
@@ -105,20 +106,27 @@ export default function SessionDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 8 },
+  container: { padding: space.md, gap: space.sm, backgroundColor: colors.background },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  spotName: { fontSize: 20, fontWeight: '700' },
-  when: { fontSize: 14, color: '#666' },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  spotName: { fontFamily: font.displaySemiBold, fontSize: 26, color: colors.ink },
+  when: { fontFamily: font.body, fontSize: 14, color: colors.inkMuted },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   stars: { flexDirection: 'row', gap: 2 },
-  meta: { fontSize: 14, color: '#666' },
-  notes: { fontSize: 14, color: '#333', fontStyle: 'italic' },
-  sectionTitle: { fontSize: 16, fontWeight: '600', marginTop: 12 },
-  quiet: { fontSize: 14, color: '#888' },
+  meta: { fontFamily: font.body, fontSize: 14, color: colors.inkMuted },
+  notes: { fontFamily: font.body, fontSize: 14, color: colors.ink, fontStyle: 'italic' },
+  sectionTitle: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.ink, marginTop: space.sm },
+  quiet: { fontFamily: font.body, fontStyle: 'italic', fontSize: 14, color: colors.pending },
   failedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  retry: { fontSize: 14, color: '#208AEF', fontWeight: '600' },
-  grid: { gap: 6 },
+  retry: { fontFamily: font.bodySemiBold, fontSize: 14, color: colors.accent, textDecorationLine: 'underline' },
+  grid: {
+    gap: space.sm,
+    backgroundColor: colors.surface,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    padding: space.md,
+  },
   row: { flexDirection: 'row', justifyContent: 'space-between' },
-  rowLabel: { fontSize: 14, color: '#666' },
-  rowValue: { fontSize: 14, fontWeight: '500' },
+  rowLabel: { fontFamily: font.body, fontSize: 14, color: colors.inkMuted },
+  rowValue: { fontFamily: font.monoMedium, fontSize: 14, color: colors.ink },
 });

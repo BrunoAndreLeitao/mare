@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import { useEffect } from 'react';
-import { Button, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { t } from '../../i18n';
 import { useSpotsStore } from '../../stores/spotsStore';
+import { colors, font, radius, space } from '../../theme';
 
 export default function SpotsScreen() {
   const spots = useSpotsStore((s) => s.spots);
@@ -33,25 +34,34 @@ export default function SpotsScreen() {
         )}
       />
       <View style={styles.footer}>
-        <Button title={t.spots.create} onPress={() => router.push('/spot/novo')} />
+        <Pressable style={styles.addButton} onPress={() => router.push('/spot/novo')}>
+          <Text style={styles.addButtonLabel}>{t.spots.create}</Text>
+        </Pressable>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  empty: { textAlign: 'center', color: '#666' },
+  container: { flex: 1, backgroundColor: colors.background },
+  emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.lg },
+  empty: { textAlign: 'center', fontFamily: font.body, color: colors.inkMuted },
   row: {
-    paddingHorizontal: 16,
+    paddingHorizontal: space.md,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ccc',
+    borderBottomColor: colors.hairline,
     gap: 2,
   },
-  name: { fontSize: 16, fontWeight: '600' },
-  coords: { fontSize: 13, color: '#666' },
-  footer: { padding: 16 },
-  error: { color: '#c0392b', padding: 16 },
+  name: { fontFamily: font.displaySemiBold, fontSize: 16, color: colors.ink },
+  coords: { fontFamily: font.mono, fontSize: 13, color: colors.inkMuted },
+  footer: { padding: space.md },
+  addButton: {
+    backgroundColor: colors.accent,
+    borderRadius: radius.input,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  addButtonLabel: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.accentOn },
+  error: { fontFamily: font.body, color: colors.error, padding: space.md },
 });

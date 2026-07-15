@@ -4,7 +4,7 @@ import DateTimePicker, {
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Button, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { type Rating } from '../../db/types';
 import { t } from '../../i18n';
@@ -13,6 +13,7 @@ import { fmtLocal } from '../../utils/format';
 import { useBoardsStore } from '../../stores/boardsStore';
 import { useSessionsStore } from '../../stores/sessionsStore';
 import { useSpotsStore } from '../../stores/spotsStore';
+import { colors, font, radius, space } from '../../theme';
 
 const OFFSETS = [0, 1, 2, 3] as const;
 const DURATIONS = [30, 60, 90, 120] as const;
@@ -121,7 +122,9 @@ export default function NewSessionScreen() {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.empty}>{t.sessions.noSpots}</Text>
-        <Button title={t.spots.create} onPress={() => router.push('/spot/novo')} />
+        <Pressable style={styles.registerButton} onPress={() => router.push('/spot/novo')}>
+          <Text style={styles.registerButtonLabel}>{t.spots.create}</Text>
+        </Pressable>
       </View>
     );
   }
@@ -193,7 +196,7 @@ export default function NewSessionScreen() {
               <Ionicons
                 name={rating !== null && value <= rating ? 'star' : 'star-outline'}
                 size={40}
-                color={rating !== null && value <= rating ? '#f5a623' : '#bbb'}
+                color={rating !== null && value <= rating ? colors.accent : colors.starEmpty}
               />
             </Pressable>
           ))}
@@ -246,37 +249,56 @@ export default function NewSessionScreen() {
       />
 
       {storeError !== null && <Text style={styles.error}>{storeError}</Text>}
-      <Button title={t.sessions.register} onPress={submit} />
+      <Pressable style={styles.registerButton} onPress={submit}>
+        <Text style={styles.registerButtonLabel}>{t.sessions.register}</Text>
+      </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 8 },
-  emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, padding: 24 },
-  empty: { textAlign: 'center', color: '#666' },
-  label: { fontSize: 13, fontWeight: '600', marginTop: 8 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  container: { padding: space.md, gap: space.sm, backgroundColor: colors.background },
+  emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.lg, padding: space.lg, backgroundColor: colors.background },
+  empty: { textAlign: 'center', fontFamily: font.body, color: colors.inkMuted },
+  label: {
+    fontFamily: font.bodySemiBold,
+    fontSize: 13,
+    color: colors.inkMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: space.sm,
+  },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   chip: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 16,
+    borderColor: colors.hairline,
+    borderRadius: radius.chip,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  chipSelected: { backgroundColor: '#208AEF', borderColor: '#208AEF' },
-  chipLabel: { fontSize: 14 },
-  chipLabelSelected: { color: '#fff' },
-  whenPreview: { color: '#666', fontSize: 13 },
+  chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
+  chipLabel: { fontFamily: font.body, fontSize: 14, color: colors.ink },
+  chipLabelSelected: { fontFamily: font.bodySemiBold, color: colors.accentOn },
+  whenPreview: { fontFamily: font.mono, color: colors.inkMuted, fontSize: 13 },
   stars: { flexDirection: 'row', gap: 8 },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderColor: colors.hairline,
+    borderRadius: radius.input,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    fontFamily: font.body,
     fontSize: 16,
+    color: colors.ink,
   },
-  notes: { minHeight: 80, textAlignVertical: 'top' },
-  error: { color: '#c0392b' },
+  notes: { minHeight: 80, textAlignVertical: 'top', fontStyle: 'italic' },
+  registerButton: {
+    backgroundColor: colors.accent,
+    borderRadius: radius.input,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: space.sm,
+  },
+  registerButtonLabel: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.accentOn },
+  error: { fontFamily: font.body, color: colors.error },
 });
