@@ -140,19 +140,28 @@ export default function SessionsScreen() {
         contentContainerStyle={sessions.length === 0 ? styles.emptyContainer : undefined}
         ListEmptyComponent={
           <View style={styles.emptyBody}>
+            <Ionicons name="water-outline" size={64} color={colors.inkMuted} />
             <Text style={styles.emptyTitle}>{t.sessions.emptyTitle}</Text>
             <Text style={styles.emptyText}>{t.sessions.emptyBody}</Text>
+            <Pressable
+              style={[styles.registerButton, styles.emptyCta]}
+              onPress={() => router.push('/sessao/nova')}
+            >
+              <Text style={styles.registerButtonLabel}>{t.sessions.register}</Text>
+            </Pressable>
           </View>
         }
         renderItem={({ item }) => (
           <SessionCard item={item} onRetry={(id) => void retryConditions(id)} />
         )}
       />
-      <View style={styles.footer}>
-        <Pressable style={styles.registerButton} onPress={() => router.push('/sessao/nova')}>
-          <Text style={styles.registerButtonLabel}>{t.sessions.register}</Text>
-        </Pressable>
-      </View>
+      {sessions.length > 0 && (
+        <View style={styles.footer}>
+          <Pressable style={styles.registerButton} onPress={() => router.push('/sessao/nova')}>
+            <Text style={styles.registerButtonLabel}>{t.sessions.register}</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }
@@ -192,5 +201,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   registerButtonLabel: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.accentOn },
+  emptyCta: { paddingHorizontal: space.xl, marginTop: space.sm },
   error: { fontFamily: font.body, color: colors.error, padding: space.md },
 });
