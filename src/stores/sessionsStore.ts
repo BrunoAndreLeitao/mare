@@ -4,6 +4,7 @@ import { getConditionsRepo, getSessionRepo } from '../db';
 import {
   type NewSession,
   type Session,
+  type SessionChanges,
   type SessionConditions,
   type SessionListItem,
 } from '../db/types';
@@ -23,6 +24,8 @@ interface SessionsState {
   loadLastUsedSpot(): Promise<void>;
   /** Returns the created session, or null on failure (error is set). */
   create(input: NewSession): Promise<Session | null>;
+  /** Edita e recarrega a lista. Returns the updated session, or null on failure (error is set). */
+  update(id: string, changes: SessionChanges): Promise<Session | null>;
   /** "Tentar de novo": resetRetries + reload. Returns false on failure. */
   retryConditions(sessionId: string): Promise<boolean>;
   /** Detalhe: condições completas de uma sessão (null em falha; error é setado). */
@@ -82,6 +85,21 @@ export const useSessionsStore = create<SessionsState>()((set, get) => ({
       const repo = await getSessionRepo();
       const session = await repo.create(input);
       set({ error: null, lastUsedSpotId: session.spotId });
+      return session;
+    } catch {
+      set({ error: t.common.genericError });
+      return null;
+    }
+  },
+
+  async update(id, changes) {
+    try {
+      const repo = await getSessionRepo();
+      const session = await repo.update(id, changes);
+      set({ error: null });
+      // A invalidação de condições (Regra 3) é do repo; aqui só refletimos o
+      // resultado — o load garante lista e detalhe frescos ao voltar.
+      await get().load();
       return session;
     } catch {
       set({ error: t.common.genericError });
