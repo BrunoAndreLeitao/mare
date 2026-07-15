@@ -1,8 +1,9 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { Alert, Button, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { SpotForm } from '../../components/SpotForm';
 import { t } from '../../i18n';
+import { colors, font, space } from '../../theme';
 import { useSpotsStore } from '../../stores/spotsStore';
 
 export default function EditSpotScreen() {
@@ -51,17 +52,21 @@ export default function EditSpotScreen() {
         }}
       />
       <View style={styles.archive}>
-        <Button
-          title={t.common.archive}
-          color="#c0392b"
-          onPress={() => confirmArchive(spot.id)}
-        />
+        <Pressable onPress={() => confirmArchive(spot.id)} hitSlop={8}>
+          <Text style={styles.archiveLabel}>{t.common.archive}</Text>
+        </Pressable>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  archive: { padding: 16 },
+  container: { flex: 1, backgroundColor: colors.background },
+  archive: { padding: space.md, alignItems: 'center' },
+  archiveLabel: {
+    fontFamily: font.bodySemiBold,
+    fontSize: 14,
+    color: colors.error,
+    textDecorationLine: 'underline',
+  },
 });

@@ -1,9 +1,10 @@
 import * as Location from 'expo-location';
 import { useState } from 'react';
-import { Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
 
 import { t } from '../i18n';
 import { parseDecimal, validateCoords } from '../utils/coords';
+import { colors, font, radius, space } from '../theme';
 
 export interface SpotFormValues {
   name: string;
@@ -86,6 +87,7 @@ export function SpotForm({ initial, submitLabel, externalError, onSubmit }: Prop
         value={name}
         onChangeText={setName}
         placeholder={t.spots.namePlaceholder}
+        placeholderTextColor={colors.inkMuted}
         autoFocus
       />
 
@@ -107,9 +109,14 @@ export function SpotForm({ initial, submitLabel, externalError, onSubmit }: Prop
         keyboardType="numbers-and-punctuation"
       />
 
-      <View style={styles.locationButton}>
-        <Button title={t.spots.useMyLocation} onPress={fillFromLocation} disabled={locating} />
-      </View>
+      <Pressable
+        onPress={() => void fillFromLocation()}
+        disabled={locating}
+        style={locating && styles.linkDisabled}
+        hitSlop={8}
+      >
+        <Text style={styles.link}>{t.spots.useMyLocation}</Text>
+      </Pressable>
 
       <Text style={styles.label}>{t.spots.notes}</Text>
       <TextInput
@@ -117,26 +124,53 @@ export function SpotForm({ initial, submitLabel, externalError, onSubmit }: Prop
         value={notes}
         onChangeText={setNotes}
         placeholder={t.spots.notesPlaceholder}
+        placeholderTextColor={colors.inkMuted}
         multiline
       />
 
-      <Button title={submitLabel} onPress={submit} />
+      <Pressable style={styles.submitButton} onPress={submit}>
+        <Text style={styles.submitButtonLabel}>{submitLabel}</Text>
+      </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 8 },
-  label: { fontSize: 13, fontWeight: '600', marginTop: 8 },
+  container: { padding: space.md, gap: space.sm, backgroundColor: colors.background },
+  label: {
+    fontFamily: font.bodySemiBold,
+    fontSize: 13,
+    color: colors.inkMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: space.sm,
+  },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderColor: colors.hairline,
+    borderRadius: radius.input,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    fontFamily: font.body,
     fontSize: 16,
+    color: colors.ink,
   },
-  notes: { minHeight: 80, textAlignVertical: 'top' },
-  locationButton: { marginVertical: 8 },
-  error: { color: '#c0392b' },
+  notes: { minHeight: 80, textAlignVertical: 'top', fontStyle: 'italic' },
+  link: {
+    fontFamily: font.bodySemiBold,
+    fontSize: 14,
+    color: colors.accent,
+    textDecorationLine: 'underline',
+    marginVertical: space.sm,
+  },
+  linkDisabled: { opacity: 0.5 },
+  submitButton: {
+    backgroundColor: colors.accent,
+    borderRadius: radius.input,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: space.sm,
+  },
+  submitButtonLabel: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.accentOn },
+  error: { fontFamily: font.body, color: colors.error },
 });

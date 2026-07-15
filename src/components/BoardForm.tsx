@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Button, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { type BoardType } from '../db/types';
 import { t } from '../i18n';
 import { parseDecimal } from '../utils/coords';
+import { colors, font, radius, space } from '../theme';
 
 export interface BoardFormValues {
   name: string;
@@ -75,6 +76,7 @@ export function BoardForm({ initial, submitLabel, externalError, onSubmit }: Pro
         value={name}
         onChangeText={setName}
         placeholder={t.boards.namePlaceholder}
+        placeholderTextColor={colors.inkMuted}
         autoFocus
       />
 
@@ -103,32 +105,51 @@ export function BoardForm({ initial, submitLabel, externalError, onSubmit }: Pro
         keyboardType="decimal-pad"
       />
 
-      <Button title={submitLabel} onPress={submit} />
+      <Pressable style={styles.submitButton} onPress={submit}>
+        <Text style={styles.submitButtonLabel}>{submitLabel}</Text>
+      </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 8 },
-  label: { fontSize: 13, fontWeight: '600', marginTop: 8 },
+  container: { padding: space.md, gap: space.sm, backgroundColor: colors.background },
+  label: {
+    fontFamily: font.bodySemiBold,
+    fontSize: 13,
+    color: colors.inkMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: space.sm,
+  },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderColor: colors.hairline,
+    borderRadius: radius.input,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    fontFamily: font.body,
     fontSize: 16,
+    color: colors.ink,
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   chip: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 16,
+    borderColor: colors.hairline,
+    borderRadius: radius.chip,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  chipSelected: { backgroundColor: '#208AEF', borderColor: '#208AEF' },
-  chipLabel: { fontSize: 14 },
-  chipLabelSelected: { color: '#fff' },
-  error: { color: '#c0392b' },
+  chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
+  chipLabel: { fontFamily: font.body, fontSize: 14, color: colors.ink },
+  chipLabelSelected: { fontFamily: font.bodySemiBold, color: colors.accentOn },
+  submitButton: {
+    backgroundColor: colors.accent,
+    borderRadius: radius.input,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: space.sm,
+  },
+  submitButtonLabel: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.accentOn },
+  error: { fontFamily: font.body, color: colors.error },
 });
