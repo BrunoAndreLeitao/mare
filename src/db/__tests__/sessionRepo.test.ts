@@ -261,4 +261,24 @@ describe('sessionRepo', () => {
       (raw.prepare('SELECT COUNT(*) AS n FROM session_conditions').get() as { n: number }).n,
     ).toBe(0);
   });
+
+  test('(k) update com null explícito limpa board_id/notes para NULL; campo ausente (undefined) não é tocado', async () => {
+    const s = await repo.create({
+      spotId: 'spot-1',
+      boardId: 'board-1',
+      startedAt: 111,
+      durationMin: 90,
+      rating: 4,
+      notes: 'pumping',
+    });
+
+    await repo.update(s.id, { boardId: null, notes: null });
+
+    const after = (await repo.getById(s.id))!;
+    expect(after.boardId).toBeNull();
+    expect(after.notes).toBeNull();
+    expect(after.durationMin).toBe(90); // undefined = não tocado (semântica *Changes)
+    // Nem boardId nem notes invalidam condições.
+    expect(conditions(s.id)).toMatchObject({ fetch_status: 'pending' });
+  });
 });

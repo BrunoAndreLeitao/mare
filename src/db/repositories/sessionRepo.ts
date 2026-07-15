@@ -6,13 +6,14 @@ import {
   type NewSession,
   type Rating,
   type Session,
+  type SessionChanges,
   type SessionListItem,
   type TidePhase,
 } from '../types';
 
 // Field → column for the sessions table (drives buildSetClause). updated_at is
 // NOT here — it is metadata the repo bumps, not a caller-provided field.
-const SESSION_COLUMN_MAP: Record<keyof NewSession, string> = {
+const SESSION_COLUMN_MAP: Record<keyof SessionChanges, string> = {
   spotId: 'spot_id',
   boardId: 'board_id',
   startedAt: 'started_at',
@@ -42,7 +43,7 @@ export interface SessionRepository {
    * 'pending', retry_count=0, values cleared — enforced here in the repo, not
    * trusted to the UI (docs/DATABASE.md §Regras 3).
    */
-  update(id: string, changes: Partial<NewSession>): Promise<Session>;
+  update(id: string, changes: SessionChanges): Promise<Session>;
   /** Hard delete — ON DELETE CASCADE clears the conditions row (docs/DATABASE.md §Regras 4). */
   delete(id: string): Promise<void>;
 }
@@ -201,7 +202,7 @@ export function createSessionRepo(db: SqlDb, deps: RepoDeps): SessionRepository 
       return row === null ? null : row.spot_id;
     },
 
-    async update(id: string, changes: Partial<NewSession>): Promise<Session> {
+    async update(id: string, changes: SessionChanges): Promise<Session> {
       const current = await getById(id);
       if (current === null) {
         throw new Error(`Session not found: ${id}`);

@@ -110,6 +110,19 @@ export interface NewSession {
   notes?: string;
 }
 
+// Update input — same semantics as SpotChanges: undefined leaves a field
+// untouched, explicit null clears it to SQL NULL. spotId, startedAt and rating
+// are NOT NULL columns, so they cannot be cleared.
+export interface SessionChanges {
+  spotId?: string;
+  boardId?: string | null;
+  startedAt?: number;
+  rating?: Rating;
+  durationMin?: number | null;
+  crowd?: Crowd | null;
+  notes?: string | null;
+}
+
 // Measurement values of a conditions snapshot — everything the fetch worker
 // writes, minus identity and fetch metadata. All partial and nullable: marine
 // and forecast can fail independently, and the update is idempotent per
