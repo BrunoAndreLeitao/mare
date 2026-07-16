@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { type BoardType } from '../db/types';
 import { t } from '../i18n';
 import { parseDecimal } from '../utils/coords';
-import { colors, font, radius, space } from '../theme';
+import { type Theme, useTheme, radius, space } from '../theme';
 
 export interface BoardFormValues {
   name: string;
@@ -31,6 +31,8 @@ function Chip({
   selected: boolean;
   onPress(): void;
 }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <Pressable style={[styles.chip, selected && styles.chipSelected]} onPress={onPress}>
       <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{label}</Text>
@@ -45,6 +47,8 @@ export function BoardForm({ initial, submitLabel, externalError, onSubmit }: Pro
     initial === undefined || initial.volumeL === null ? '' : String(initial.volumeL),
   );
   const [error, setError] = useState<string | null>(null);
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
 
   function submit() {
     if (name.trim() === '') {
@@ -76,7 +80,7 @@ export function BoardForm({ initial, submitLabel, externalError, onSubmit }: Pro
         value={name}
         onChangeText={setName}
         placeholder={t.boards.namePlaceholder}
-        placeholderTextColor={colors.inkMuted}
+        placeholderTextColor={theme.colors.inkMuted}
         autoFocus
       />
 
@@ -112,44 +116,46 @@ export function BoardForm({ initial, submitLabel, externalError, onSubmit }: Pro
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: space.md, gap: space.sm, backgroundColor: colors.background },
-  label: {
-    fontFamily: font.bodySemiBold,
-    fontSize: 13,
-    color: colors.inkMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginTop: space.sm,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.hairline,
-    borderRadius: radius.input,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontFamily: font.body,
-    fontSize: 16,
-    color: colors.ink,
-  },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.hairline,
-    borderRadius: radius.chip,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
-  chipLabel: { fontFamily: font.body, fontSize: 14, color: colors.ink },
-  chipLabelSelected: { fontFamily: font.bodySemiBold, color: colors.accentOn },
-  submitButton: {
-    backgroundColor: colors.accent,
-    borderRadius: radius.input,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: space.sm,
-  },
-  submitButtonLabel: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.accentOn },
-  error: { fontFamily: font.body, color: colors.error },
-});
+function makeStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: { padding: space.md, gap: space.sm, backgroundColor: theme.colors.background },
+    label: {
+      fontFamily: theme.font.bodySemiBold,
+      fontSize: 13,
+      color: theme.colors.inkMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginTop: space.sm,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.colors.hairlineStrong,
+      borderRadius: radius.input,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontFamily: theme.font.body,
+      fontSize: 16,
+      color: theme.colors.ink,
+    },
+    chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+    chip: {
+      borderWidth: 1,
+      borderColor: theme.colors.hairlineStrong,
+      borderRadius: radius.chip,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+    },
+    chipSelected: { backgroundColor: theme.colors.accent, borderColor: theme.colors.accent },
+    chipLabel: { fontFamily: theme.font.body, fontSize: 14, color: theme.colors.ink },
+    chipLabelSelected: { fontFamily: theme.font.bodySemiBold, color: theme.colors.accentOn },
+    submitButton: {
+      backgroundColor: theme.colors.accent,
+      borderRadius: radius.input,
+      paddingVertical: 14,
+      alignItems: 'center',
+      marginTop: space.sm,
+    },
+    submitButtonLabel: { fontFamily: theme.font.bodySemiBold, fontSize: 16, color: theme.colors.accentOn },
+    error: { fontFamily: theme.font.body, color: theme.colors.error },
+  });
+}

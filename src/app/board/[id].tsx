@@ -1,9 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useMemo } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BoardForm } from '../../components/BoardForm';
 import { t } from '../../i18n';
-import { colors, font, space } from '../../theme';
+import { type Theme, useTheme, space } from '../../theme';
 import { useBoardsStore } from '../../stores/boardsStore';
 
 export default function EditBoardScreen() {
@@ -12,6 +13,8 @@ export default function EditBoardScreen() {
   const updateBoard = useBoardsStore((s) => s.update);
   const archiveBoard = useBoardsStore((s) => s.archive);
   const error = useBoardsStore((s) => s.error);
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
 
   // Only reachable from the quiver list, which loads the store on mount.
   if (board === undefined) {
@@ -59,13 +62,15 @@ export default function EditBoardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  archive: { padding: space.md, alignItems: 'center' },
-  archiveLabel: {
-    fontFamily: font.bodySemiBold,
-    fontSize: 14,
-    color: colors.error,
-    textDecorationLine: 'underline',
-  },
-});
+function makeStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    archive: { padding: space.md, alignItems: 'center' },
+    archiveLabel: {
+      fontFamily: theme.font.bodySemiBold,
+      fontSize: 14,
+      color: theme.colors.error,
+      textDecorationLine: 'underline',
+    },
+  });
+}

@@ -1,9 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useMemo } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { SpotForm } from '../../components/SpotForm';
 import { t } from '../../i18n';
-import { colors, font, space } from '../../theme';
+import { type Theme, useTheme, space } from '../../theme';
 import { useSpotsStore } from '../../stores/spotsStore';
 
 export default function EditSpotScreen() {
@@ -12,6 +13,8 @@ export default function EditSpotScreen() {
   const updateSpot = useSpotsStore((s) => s.update);
   const archiveSpot = useSpotsStore((s) => s.archive);
   const error = useSpotsStore((s) => s.error);
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
 
   // Only reachable from the spots list, which loads the store on mount.
   if (spot === undefined) {
@@ -60,13 +63,15 @@ export default function EditSpotScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  archive: { padding: space.md, alignItems: 'center' },
-  archiveLabel: {
-    fontFamily: font.bodySemiBold,
-    fontSize: 14,
-    color: colors.error,
-    textDecorationLine: 'underline',
-  },
-});
+function makeStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    archive: { padding: space.md, alignItems: 'center' },
+    archiveLabel: {
+      fontFamily: theme.font.bodySemiBold,
+      fontSize: 14,
+      color: theme.colors.error,
+      textDecorationLine: 'underline',
+    },
+  });
+}
