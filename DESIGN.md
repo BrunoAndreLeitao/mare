@@ -30,7 +30,35 @@
 - **Erro (`error`):** `#A33B2E` — terracota escuro, para falhas e validação. Substitui `#c0392b`.
 - **Aviso/pendente (`pending`):** `#8A7A5C` — sépia, para "a obter…".
 - **Linhas/bordas (`hairline`):** `#DCD3BF` — bege-acinzentado, substitui `#ccc`/`#ddd`.
-- **Modo escuro:** não é prioridade no MVP (app de uso diurno/pós-praia); se entrar, inverter para `ink` como fundo (`#16324F`→`#12202F`) e `background` como texto, reduzindo saturação do acento em ~15%.
+
+## Modo escuro — "Carta Náutica"
+
+A app tem dois temas completos, não um claro + um escuro derivado por inversão. O claro ("Caderno de bordo", descrito acima) e o escuro ("Carta Náutica", do mockup do README) têm paletas E tipografias próprias — **decisão explícita do utilizador**, tomada com o custo à vista: trocar de tema troca a identidade visual da app, não só a iluminação, e o escuro perde a monoespaçada (ver tabela de tokens).
+
+**Consumo:** `useTheme()` em `src/theme.ts` devolve `lightTheme` ou `darkTheme` consoante `useColorScheme()`. Sem preferência persistida e sem definição no Perfil — o telemóvel já sabe se é de noite; uma definição seria UI e persistência sem valor para o utilizador zero. Se um dia houver override manual, muda-se no hook, os ecrãs não mudam. Ecrãs consomem via `const theme = useTheme(); const styles = useMemo(() => makeStyles(theme), [theme])`.
+
+### Tokens
+
+| Token | Claro ("Caderno de bordo") | Escuro ("Carta Náutica") |
+|---|---|---|
+| background | `#F7F2E7` | `#14181B` |
+| surface | `#FBF8F0` | `#1C2227` |
+| ink | `#16324F` | `#EDE6D6` |
+| inkMuted | `#5C6B73` | `#7C8790` |
+| accent | `#C4622D` | `#4C7C9C` |
+| accentOn | `#F7F2E7` | `#14181B` |
+| accentSoft | `#EAE1CC` | `#26333C` |
+| error | `#A33B2E` | `#C97B4A` |
+| hairline | `#DCD3BF` | `#2C343A` |
+| hairlineStrong | `#C9BE9F` | `#3A424A` |
+| starEmpty | `#D9CFB8` | `#3A424A` |
+| success | `#3D6B4F` | `#4C7C9C` |
+| pending | `#8A7A5C` | `#7C8790` |
+| display / displayItalic / displaySemiBold | Fraunces 500 / 500 Italic / 600 | Spectral 500 / 500 Italic / 600 |
+| body / bodySemiBold | Instrument Sans 400 / 600 | Archivo 400 / 600 |
+| mono / monoMedium / monoSemiBold | JetBrains Mono 400 / 500 / 600 | Archivo 500 / 600 / 700 |
+
+Notas: `accentSoft` e `hairlineStrong` vieram com o escuro (sem equivalente no claro antes desta entrega, agora tokens de ambos os temas). No escuro, `success` aponta para o mesmo azul do `accent` — o README não define um token de sucesso próprio para a Carta Náutica e não há hoje nenhuma UI de sucesso a usar o token. O escuro não tem monoespaçada própria no README: os papéis `mono*` são servidos por Archivo, o que reintroduz exatamente o "salto" de largura entre sessões que a mono do claro existe para evitar — custo aceite da decisão de tipografia por tema, não um esquecimento.
 
 ## Espaçamento
 - **Unidade base:** 4px.
@@ -79,3 +107,5 @@
 | Papel quente em vez de branco | Branco clínico é o padrão de toda app de produtividade; o tom quente é o que torna isto pessoal. |
 | Laranja queimado em vez de azul genérico | `#208AEF` é o azul-app-default; o laranja tem referência marítima (bóias, cordame) e destaca-se de qualquer concorrente. |
 | Sem motion expressivo | O princípio inegociável nº1 do CLAUDE.md é registo em <30s — coreografia visual é fricção, não valor. |
+| Tipografia diferente por tema (Fraunces/JetBrains/Instrument no claro, Spectral/Archivo no escuro) | Escolha explícita do utilizador sobre o mockup "Carta Náutica" do README, com o custo assumido: a app troca de identidade com o tema e o escuro perde tabular-nums. |
+| Tema segue o sistema, sem definição na app | O telemóvel já sabe se é de noite; uma definição seria UI e persistência sem valor acrescentado para o utilizador zero. |

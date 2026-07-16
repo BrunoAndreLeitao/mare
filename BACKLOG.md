@@ -74,13 +74,13 @@ Regras: trabalhar por ordem; uma fase só fecha quando a Definition of Done (DoD
 
 ## Fase 3 — Histórico e Polish (Semanas 6-7)
 
-- [ ] P0 — Ecrã principal: lista de sessões (cartão: spot, data, rating, mini-resumo de condições: altura • período • vento • maré) com paginação
-- [ ] P0 — Detalhe de sessão: tudo, incluindo condições completas e notas
-- [ ] P1 — Filtros: por spot, por rating mínimo
-- [ ] P1 — Ecrã de spot: sessões desse spot + contagem por rating
-- [ ] P1 — Onboarding mínimo: 2 ecrãs (o que é a Maré, criar primeiro spot)
-- [ ] P2 — Dark mode
-- [ ] P2 — Ícones de direção (seta rodada por `*_direction_deg`) e fase da maré
+- [x] P0 — Ecrã principal: lista de sessões (cartão: spot, data, rating, mini-resumo de condições: altura • período • vento • maré) com paginação — FEITO na Fase 2 Tarefa 7 (commit 3d0169b). Paginação NÃO: `LIMIT 50` fixo, com `ponytail:` comment no sessionsStore — entra quando alguém passar as 50 sessões.
+- [x] P0 — Detalhe de sessão: tudo, incluindo condições completas e notas — FEITO na Fase 2 Tarefa 7 (commit 3d0169b).
+- [ ] P1 — Filtros: por spot, por rating mínimo — ADIADO (2026-07-16): com <5 sessões, filtrar filtra o que já cabe no ecrã. Entra quando o histórico irritar.
+- [ ] P1 — Ecrã de spot: sessões desse spot + contagem por rating — ADIADO (2026-07-16): é o embrião do ecrã de insights da Fase 4; a forma certa só se vê com sessões reais.
+- [ ] P1 — Onboarding mínimo: 2 ecrãs (o que é a Maré, criar primeiro spot) — ADIADO (2026-07-16): valor zero para o utilizador zero; o valor aparece no Beta Pessoal com os testers.
+- [x] P2 — Dark mode — tema "Carta Náutica" (README), segue o sistema via useColorScheme, tipografia própria por decisão do utilizador.
+- [x] P2 — Ícones de direção (seta rodada por `*_direction_deg`) e fase da maré — seta = rumo+180° (a API dá "de onde vem"), com teste.
 
 **DoD:** a app é usável de ponta a ponta e o Bruno começa a usá-la em TODAS as sessões reais. **Gate: nada da Fase 4 arranca sem ≥20 sessões reais registadas.**
 
