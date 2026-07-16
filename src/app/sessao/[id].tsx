@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { type SessionConditions } from '../../db/types';
@@ -31,11 +31,13 @@ export default function SessionDetailScreen() {
   const retryConditions = useSessionsStore((s) => s.retryConditions);
   const [conditions, setConditions] = useState<SessionConditions | null>(null);
 
-  useEffect(() => {
-    if (id !== undefined) {
-      void getConditions(id).then(setConditions);
-    }
-  }, [id, getConditions]);
+  useFocusEffect(
+    useCallback(() => {
+      if (id !== undefined) {
+        void getConditions(id).then(setConditions);
+      }
+    }, [id, getConditions]),
+  );
 
   // Só alcançável a partir da lista, que carrega a store.
   if (session === undefined) {
@@ -48,6 +50,15 @@ export default function SessionDetailScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable onPress={() => router.push(`/sessao/editar/${session.id}`)} hitSlop={8}>
+              <Ionicons name="create-outline" size={22} color={colors.ink} />
+            </Pressable>
+          ),
+        }}
+      />
       <View style={styles.headerRow}>
         <Text style={styles.spotName}>{session.spotName}</Text>
         <Text style={styles.when}>{fmtLocal(new Date(session.startedAt * 1000))}</Text>

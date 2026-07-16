@@ -35,6 +35,7 @@ export const t = {
     notesPlaceholder: 'Como estava o mar? Melhor onda?…',
     noSpots: 'Cria primeiro um spot para registares sessões.',
     detailTitle: 'Sessão',
+    editTitle: 'Editar sessão',
     conditionsPending: 'Condições a obter…',
     conditionsUnavailable: 'Condições indisponíveis',
     retryFetch: 'Tentar de novo',
