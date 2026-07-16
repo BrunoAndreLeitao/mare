@@ -1,6 +1,8 @@
 import { Fraunces_500Medium, Fraunces_500Medium_Italic, Fraunces_600SemiBold } from '@expo-google-fonts/fraunces';
 import { InstrumentSans_400Regular, InstrumentSans_600SemiBold } from '@expo-google-fonts/instrument-sans';
 import { JetBrainsMono_400Regular, JetBrainsMono_500Medium, JetBrainsMono_600SemiBold } from '@expo-google-fonts/jetbrains-mono';
+import { Spectral_500Medium, Spectral_500Medium_Italic, Spectral_600SemiBold } from '@expo-google-fonts/spectral';
+import { Archivo_400Regular, Archivo_500Medium, Archivo_600SemiBold, Archivo_700Bold } from '@expo-google-fonts/archivo';
 import NetInfo from '@react-native-community/netinfo';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
@@ -9,9 +11,12 @@ import { View } from 'react-native';
 
 import { t } from '../i18n';
 import { runPendingQueue } from '../services/openmeteo/runner';
-import { colors, font } from '../theme';
+import { useTheme } from '../theme';
 
 export default function RootLayout() {
+  // As 5 famílias carregam sempre, independentemente do tema ativo: carregar
+  // só as do tema pouparia arranque mas daria flash de fonte ao trocar o tema
+  // com a app aberta.
   const [fontsLoaded] = useFonts({
     Fraunces_600SemiBold,
     Fraunces_500Medium,
@@ -21,7 +26,15 @@ export default function RootLayout() {
     JetBrainsMono_400Regular,
     JetBrainsMono_500Medium,
     JetBrainsMono_600SemiBold,
+    Spectral_500Medium,
+    Spectral_500Medium_Italic,
+    Spectral_600SemiBold,
+    Archivo_400Regular,
+    Archivo_500Medium,
+    Archivo_600SemiBold,
+    Archivo_700Bold,
   });
+  const theme = useTheme();
 
   useEffect(() => {
     // Trigger 1: arranque da app (docs/OPEN_METEO.md §6).
@@ -41,14 +54,14 @@ export default function RootLayout() {
   }, []);
 
   if (!fontsLoaded) {
-    return <View style={{ flex: 1, backgroundColor: colors.background }} />;
+    return <View style={{ flex: 1, backgroundColor: theme.colors.background }} />;
   }
 
   const screenOptions = {
-    headerStyle: { backgroundColor: colors.background },
-    headerTintColor: colors.ink,
-    headerTitleStyle: { fontFamily: font.bodySemiBold },
-    contentStyle: { backgroundColor: colors.background },
+    headerStyle: { backgroundColor: theme.colors.background },
+    headerTintColor: theme.colors.ink,
+    headerTitleStyle: { fontFamily: theme.font.bodySemiBold },
+    contentStyle: { backgroundColor: theme.colors.background },
   };
 
   return (
