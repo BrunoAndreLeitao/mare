@@ -32,7 +32,7 @@ interface Props {
   submitLabel: string;
   /** Erro de SISTEMA (dono: o submit do ecrã) — renderizado junto ao botão. */
   externalError?: string | null;
-  onSubmit(values: SessionFormValues): void;
+  onSubmit(values: SessionFormValues): Promise<void>;
 }
 
 function Chip({
@@ -75,6 +75,9 @@ export function SessionForm({
   // Erro de VALIDAÇÃO (dono: o campo) — renderiza sob as estrelas. O erro de
   // SISTEMA (dono: o submit) é o externalError, renderizado junto ao botão.
   const [validationError, setValidationError] = useState<string | null>(null);
+  // Guarda contra double-submit: sem isto, um duplo-toque cria sessão
+  // duplicada (criar) ou dispara router.back() duas vezes (editar).
+  const [submitting, setSubmitting] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const ratingY = useRef(0);
 
@@ -104,7 +107,7 @@ export function SessionForm({
     return Math.floor(Date.now() / 1000) - (offsetH ?? 0) * 3_600;
   }
 
-  function submit() {
+  async function submit() {
     if (spotId === null) return;
     if (rating === null) {
       setValidationError(t.sessions.ratingRequired);
@@ -112,16 +115,22 @@ export function SessionForm({
       scrollRef.current?.scrollTo({ y: ratingY.current, animated: true });
       return;
     }
+    if (submitting) return; // já em curso — ignora o segundo toque
     setValidationError(null);
     const trimmedNotes = notes.trim();
-    onSubmit({
-      spotId,
-      startedAt: startedAtEpoch(),
-      rating,
-      boardId,
-      durationMin: duration,
-      notes: trimmedNotes === '' ? null : trimmedNotes,
-    });
+    setSubmitting(true);
+    try {
+      await onSubmit({
+        spotId,
+        startedAt: startedAtEpoch(),
+        rating,
+        boardId,
+        durationMin: duration,
+        notes: trimmedNotes === '' ? null : trimmedNotes,
+      });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -245,7 +254,11 @@ export function SessionForm({
       />
 
       {externalError != null && <Text style={styles.error}>{externalError}</Text>}
-      <Pressable style={styles.submitButton} onPress={submit}>
+      <Pressable
+        style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+        onPress={() => void submit()}
+        disabled={submitting}
+      >
         <Text style={styles.submitButtonLabel}>{submitLabel}</Text>
       </Pressable>
     </ScrollView>
@@ -293,6 +306,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: space.sm,
   },
+  submitButtonDisabled: { opacity: 0.5 },
   submitButtonLabel: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.accentOn },
   error: { fontFamily: font.body, color: colors.error },
 });

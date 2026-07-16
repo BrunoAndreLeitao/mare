@@ -97,6 +97,8 @@ export const useSessionsStore = create<SessionsState>()((set, get) => ({
       const repo = await getSessionRepo();
       const session = await repo.update(id, changes);
       set({ error: null });
+      // lastUsedSpotId não é tocado aqui de propósito: "último usado" é uma
+      // preocupação do registo de nova sessão, editar não é "usar" um spot.
       // A invalidação de condições (Regra 3) é do repo; aqui só refletimos o
       // resultado — o load garante lista e detalhe frescos ao voltar.
       await get().load();
