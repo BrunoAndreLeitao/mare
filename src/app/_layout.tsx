@@ -5,6 +5,7 @@ import { Spectral_500Medium, Spectral_500Medium_Italic, Spectral_600SemiBold } f
 import { Archivo_400Regular, Archivo_500Medium, Archivo_600SemiBold, Archivo_700Bold } from '@expo-google-fonts/archivo';
 import NetInfo from '@react-native-community/netinfo';
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import { View } from 'react-native';
@@ -65,15 +66,20 @@ export default function RootLayout() {
   };
 
   return (
-    <Stack screenOptions={screenOptions}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="spot/novo" options={{ title: t.spots.newTitle }} />
-      <Stack.Screen name="spot/[id]" options={{ title: t.spots.editTitle }} />
-      <Stack.Screen name="board/nova" options={{ title: t.boards.newTitle }} />
-      <Stack.Screen name="board/[id]" options={{ title: t.boards.editTitle }} />
-      <Stack.Screen name="sessao/nova" options={{ title: t.sessions.newTitle }} />
-      <Stack.Screen name="sessao/[id]" options={{ title: t.sessions.detailTitle }} />
-      <Stack.Screen name="sessao/editar/[id]" options={{ title: t.sessions.editTitle }} />
-    </Stack>
+    <>
+      {/* A cor do texto da status bar segue o tema ativo; sem isto fica
+          ilegível (texto escuro sobre fundo escuro) no tema "Carta Náutica". */}
+      <StatusBar style="auto" />
+      <Stack screenOptions={screenOptions}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="spot/novo" options={{ title: t.spots.newTitle }} />
+        <Stack.Screen name="spot/[id]" options={{ title: t.spots.editTitle }} />
+        <Stack.Screen name="board/nova" options={{ title: t.boards.newTitle }} />
+        <Stack.Screen name="board/[id]" options={{ title: t.boards.editTitle }} />
+        <Stack.Screen name="sessao/nova" options={{ title: t.sessions.newTitle }} />
+        <Stack.Screen name="sessao/[id]" options={{ title: t.sessions.detailTitle }} />
+        <Stack.Screen name="sessao/editar/[id]" options={{ title: t.sessions.editTitle }} />
+      </Stack>
+    </>
   );
 }
