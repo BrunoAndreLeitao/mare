@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { SessionForm } from '../../components/SessionForm';
@@ -8,7 +8,7 @@ import { runPendingQueue } from '../../services/openmeteo/runner';
 import { useBoardsStore } from '../../stores/boardsStore';
 import { useSessionsStore } from '../../stores/sessionsStore';
 import { useSpotsStore } from '../../stores/spotsStore';
-import { colors, font, radius, space } from '../../theme';
+import { type Theme, useTheme, radius, space } from '../../theme';
 
 export default function NewSessionScreen() {
   const spots = useSpotsStore((s) => s.spots);
@@ -19,6 +19,8 @@ export default function NewSessionScreen() {
   const storeError = useSessionsStore((s) => s.error);
   const lastUsedSpotId = useSessionsStore((s) => s.lastUsedSpotId);
   const loadLastUsedSpot = useSessionsStore((s) => s.loadLastUsedSpot);
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
 
   useEffect(() => {
     void loadSpots();
@@ -64,22 +66,24 @@ export default function NewSessionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.lg,
-    padding: space.lg,
-    backgroundColor: colors.background,
-  },
-  empty: { textAlign: 'center', fontFamily: font.body, color: colors.inkMuted },
-  registerButton: {
-    backgroundColor: colors.accent,
-    borderRadius: radius.input,
-    paddingVertical: 14,
-    paddingHorizontal: space.xl,
-    alignItems: 'center',
-  },
-  registerButtonLabel: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.accentOn },
-});
+function makeStyles(theme: Theme) {
+  return StyleSheet.create({
+    emptyContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: space.lg,
+      padding: space.lg,
+      backgroundColor: theme.colors.background,
+    },
+    empty: { textAlign: 'center', fontFamily: theme.font.body, color: theme.colors.inkMuted },
+    registerButton: {
+      backgroundColor: theme.colors.accent,
+      borderRadius: radius.input,
+      paddingVertical: 14,
+      paddingHorizontal: space.xl,
+      alignItems: 'center',
+    },
+    registerButtonLabel: { fontFamily: theme.font.bodySemiBold, fontSize: 16, color: theme.colors.accentOn },
+  });
+}

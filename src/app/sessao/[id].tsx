@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { type SessionConditions } from '../../db/types';
@@ -8,11 +8,13 @@ import { t } from '../../i18n';
 import { useSessionsStore } from '../../stores/sessionsStore';
 import { degToCardinal } from '../../utils/directions';
 import { fmtLocal } from '../../utils/format';
-import { colors, font, radius, space } from '../../theme';
+import { type Theme, useTheme, radius, space } from '../../theme';
 
 const DASH = '—';
 
 function Row({ label, value }: { label: string; value: string }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={styles.row}>
       <Text style={styles.rowLabel}>{label}</Text>
@@ -30,6 +32,8 @@ export default function SessionDetailScreen() {
   const getConditions = useSessionsStore((s) => s.getConditions);
   const retryConditions = useSessionsStore((s) => s.retryConditions);
   const [conditions, setConditions] = useState<SessionConditions | null>(null);
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
 
   useFocusEffect(
     useCallback(() => {
@@ -54,7 +58,7 @@ export default function SessionDetailScreen() {
         options={{
           headerRight: () => (
             <Pressable onPress={() => router.push(`/sessao/editar/${session.id}`)} hitSlop={8}>
-              <Ionicons name="create-outline" size={22} color={colors.ink} />
+              <Ionicons name="create-outline" size={22} color={theme.colors.ink} />
             </Pressable>
           ),
         }}
@@ -70,7 +74,7 @@ export default function SessionDetailScreen() {
               key={v}
               name={v <= session.rating ? 'star' : 'star-outline'}
               size={20}
-              color={v <= session.rating ? colors.accent : colors.starEmpty}
+              color={v <= session.rating ? theme.colors.accent : theme.colors.starEmpty}
             />
           ))}
         </View>
@@ -116,28 +120,30 @@ export default function SessionDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: space.md, gap: space.sm, backgroundColor: colors.background },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  spotName: { fontFamily: font.displaySemiBold, fontSize: 26, color: colors.ink },
-  when: { fontFamily: font.body, fontSize: 14, color: colors.inkMuted },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  stars: { flexDirection: 'row', gap: 2 },
-  meta: { fontFamily: font.body, fontSize: 14, color: colors.inkMuted },
-  notes: { fontFamily: font.body, fontSize: 14, color: colors.ink, fontStyle: 'italic' },
-  sectionTitle: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.ink, marginTop: space.sm },
-  quiet: { fontFamily: font.body, fontStyle: 'italic', fontSize: 14, color: colors.pending },
-  failedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  retry: { fontFamily: font.bodySemiBold, fontSize: 14, color: colors.accent, textDecorationLine: 'underline' },
-  grid: {
-    gap: space.sm,
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.hairline,
-    padding: space.md,
-  },
-  row: { flexDirection: 'row', justifyContent: 'space-between' },
-  rowLabel: { fontFamily: font.body, fontSize: 14, color: colors.inkMuted },
-  rowValue: { fontFamily: font.monoMedium, fontSize: 14, color: colors.ink },
-});
+function makeStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: { padding: space.md, gap: space.sm, backgroundColor: theme.colors.background },
+    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+    spotName: { fontFamily: theme.font.displaySemiBold, fontSize: 26, color: theme.colors.ink },
+    when: { fontFamily: theme.font.body, fontSize: 14, color: theme.colors.inkMuted },
+    metaRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+    stars: { flexDirection: 'row', gap: 2 },
+    meta: { fontFamily: theme.font.body, fontSize: 14, color: theme.colors.inkMuted },
+    notes: { fontFamily: theme.font.body, fontSize: 14, color: theme.colors.ink, fontStyle: 'italic' },
+    sectionTitle: { fontFamily: theme.font.bodySemiBold, fontSize: 16, color: theme.colors.ink, marginTop: space.sm },
+    quiet: { fontFamily: theme.font.body, fontStyle: 'italic', fontSize: 14, color: theme.colors.pending },
+    failedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    retry: { fontFamily: theme.font.bodySemiBold, fontSize: 14, color: theme.colors.accent, textDecorationLine: 'underline' },
+    grid: {
+      gap: space.sm,
+      backgroundColor: theme.colors.surface,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: theme.colors.hairline,
+      padding: space.md,
+    },
+    row: { flexDirection: 'row', justifyContent: 'space-between' },
+    rowLabel: { fontFamily: theme.font.body, fontSize: 14, color: theme.colors.inkMuted },
+    rowValue: { fontFamily: theme.font.monoMedium, fontSize: 14, color: theme.colors.ink },
+  });
+}
