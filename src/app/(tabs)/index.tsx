@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { type SessionListItem } from '../../db/types';
@@ -9,13 +9,15 @@ import { runPendingQueue } from '../../services/openmeteo/runner';
 import { useSessionsStore } from '../../stores/sessionsStore';
 import { degToCardinal } from '../../utils/directions';
 import { fmtLocal } from '../../utils/format';
-import { colors, font, radius, space } from '../../theme';
+import { type Theme, useTheme, radius, space } from '../../theme';
 
 // Campo em falta DENTRO de linha renderizada mostra "—" (ausência explícita,
 // não silenciosa); linha inteira em falta não renderiza.
 const DASH = '—';
 
 function Stars({ rating }: { rating: number }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={styles.stars}>
       {([1, 2, 3, 4, 5] as const).map((v) => (
@@ -23,7 +25,7 @@ function Stars({ rating }: { rating: number }) {
           key={v}
           name={v <= rating ? 'star' : 'star-outline'}
           size={14}
-          color={v <= rating ? colors.accent : colors.starEmpty}
+          color={v <= rating ? theme.colors.accent : theme.colors.starEmpty}
         />
       ))}
     </View>
@@ -37,6 +39,8 @@ function ConditionsZone({
   item: SessionListItem;
   onRetry(id: string): void;
 }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   if (item.fetchStatus === 'pending') {
     return <Text style={styles.condQuiet}>{t.sessions.conditionsPending}</Text>;
   }
@@ -83,6 +87,8 @@ function SessionCard({
   item: SessionListItem;
   onRetry(id: string): void;
 }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const meta = [item.boardName, item.durationMin !== null ? `${item.durationMin} min` : null]
     .filter((m) => m !== null)
     .join(' · ');
@@ -107,6 +113,8 @@ export default function SessionsScreen() {
   const load = useSessionsStore((s) => s.load);
   const retryConditions = useSessionsStore((s) => s.retryConditions);
   const [refreshing, setRefreshing] = useState(false);
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
 
   // Trigger 3: pull-to-refresh corre o worker E recarrega (o load final
   // garante lista fresca mesmo sem mudanças); spinner cobre a corrida toda.
@@ -140,7 +148,7 @@ export default function SessionsScreen() {
         contentContainerStyle={sessions.length === 0 ? styles.emptyContainer : undefined}
         ListEmptyComponent={
           <View style={styles.emptyBody}>
-            <Ionicons name="water-outline" size={64} color={colors.inkMuted} />
+            <Ionicons name="water-outline" size={64} color={theme.colors.inkMuted} />
             <Text style={styles.emptyTitle}>{t.sessions.emptyTitle}</Text>
             <Text style={styles.emptyText}>{t.sessions.emptyBody}</Text>
             <Pressable
@@ -166,41 +174,43 @@ export default function SessionsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  emptyContainer: { flex: 1 },
-  emptyBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.sm, padding: space.lg },
-  emptyTitle: { fontFamily: font.displayMediumItalic, fontSize: 22, color: colors.ink },
-  emptyText: { textAlign: 'center', fontFamily: font.body, fontSize: 15, color: colors.inkMuted },
-  card: {
-    marginHorizontal: space.md,
-    marginTop: space.sm,
-    padding: space.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.hairline,
-    gap: space.xs,
-  },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  spotName: { fontFamily: font.displaySemiBold, fontSize: 17, color: colors.ink },
-  when: { fontFamily: font.body, fontSize: 13, color: colors.inkMuted },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  stars: { flexDirection: 'row', gap: 1 },
-  meta: { fontFamily: font.body, fontSize: 13, color: colors.inkMuted },
-  condQuiet: { fontFamily: font.body, fontStyle: 'italic', fontSize: 13, color: colors.pending },
-  condSignal: { fontFamily: font.monoMedium, fontSize: 17, color: colors.ink },
-  condContext: { fontFamily: font.mono, fontSize: 13, color: colors.inkMuted },
-  failedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  retry: { fontFamily: font.bodySemiBold, fontSize: 13, color: colors.accent, textDecorationLine: 'underline' },
-  footer: { padding: space.md },
-  registerButton: {
-    backgroundColor: colors.accent,
-    borderRadius: radius.input,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  registerButtonLabel: { fontFamily: font.bodySemiBold, fontSize: 16, color: colors.accentOn },
-  emptyCta: { paddingHorizontal: space.xl, marginTop: space.sm },
-  error: { fontFamily: font.body, color: colors.error, padding: space.md },
-});
+function makeStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    emptyContainer: { flex: 1 },
+    emptyBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.sm, padding: space.lg },
+    emptyTitle: { fontFamily: theme.font.displayItalic, fontSize: 22, color: theme.colors.ink },
+    emptyText: { textAlign: 'center', fontFamily: theme.font.body, fontSize: 15, color: theme.colors.inkMuted },
+    emptyCta: { paddingHorizontal: space.xl, marginTop: space.sm },
+    card: {
+      marginHorizontal: space.md,
+      marginTop: space.sm,
+      padding: space.md,
+      backgroundColor: theme.colors.surface,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: theme.colors.hairline,
+      gap: space.xs,
+    },
+    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+    spotName: { fontFamily: theme.font.displaySemiBold, fontSize: 17, color: theme.colors.ink },
+    when: { fontFamily: theme.font.body, fontSize: 13, color: theme.colors.inkMuted },
+    metaRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+    stars: { flexDirection: 'row', gap: 1 },
+    meta: { fontFamily: theme.font.body, fontSize: 13, color: theme.colors.inkMuted },
+    condQuiet: { fontFamily: theme.font.body, fontStyle: 'italic', fontSize: 13, color: theme.colors.pending },
+    condSignal: { fontFamily: theme.font.monoMedium, fontSize: 17, color: theme.colors.ink },
+    condContext: { fontFamily: theme.font.mono, fontSize: 13, color: theme.colors.inkMuted },
+    failedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    retry: { fontFamily: theme.font.bodySemiBold, fontSize: 13, color: theme.colors.accent, textDecorationLine: 'underline' },
+    footer: { padding: space.md },
+    registerButton: {
+      backgroundColor: theme.colors.accent,
+      borderRadius: radius.input,
+      paddingVertical: 14,
+      alignItems: 'center',
+    },
+    registerButtonLabel: { fontFamily: theme.font.bodySemiBold, fontSize: 16, color: theme.colors.accentOn },
+    error: { fontFamily: theme.font.body, color: theme.colors.error, padding: space.md },
+  });
+}

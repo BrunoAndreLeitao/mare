@@ -2,16 +2,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
 import { t } from '../../i18n';
-import { colors, font } from '../../theme';
+import { useTheme } from '../../theme';
 
 export default function TabsLayout() {
+  const theme = useTheme();
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.inkMuted,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.hairline },
-        tabBarLabelStyle: { fontFamily: font.bodySemiBold, fontSize: 11 },
+        tabBarActiveTintColor: theme.colors.accent,
+        tabBarInactiveTintColor: theme.colors.inkMuted,
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.hairline,
+        },
+        tabBarLabelStyle: { fontFamily: theme.font.bodySemiBold, fontSize: 11 },
+        headerStyle: { backgroundColor: theme.colors.background },
+        headerTintColor: theme.colors.ink,
+        headerTitleStyle: { fontFamily: theme.font.bodySemiBold },
       }}
     >
       <Tabs.Screen
