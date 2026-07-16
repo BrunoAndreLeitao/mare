@@ -3,6 +3,7 @@ import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { DirectionArrow, TideIcon } from '../../components/DirectionArrow';
 import { type SessionConditions } from '../../db/types';
 import { t } from '../../i18n';
 import { useSessionsStore } from '../../stores/sessionsStore';
@@ -23,8 +24,21 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
+function DirRow({ label, deg }: { label: string; deg: number | null }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  return (
+    <View style={styles.row}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      <View style={styles.valueWithIcon}>
+        {deg !== null && <DirectionArrow deg={deg} size={14} color={theme.colors.ink} />}
+        <Text style={styles.rowValue}>{deg !== null ? `${degToCardinal(deg)} (${deg}°)` : DASH}</Text>
+      </View>
+    </View>
+  );
+}
+
 const num = (v: number | null, unit: string) => (v !== null ? `${v} ${unit}` : DASH);
-const dir = (v: number | null) => (v !== null ? `${degToCardinal(v)} (${v}°)` : DASH);
 
 export default function SessionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -102,18 +116,25 @@ export default function SessionDetailScreen() {
           <Row label={t.sessions.detail.swell} value={num(conditions.swellHeightM, 'm')} />
           <Row label={t.sessions.detail.period} value={num(conditions.swellPeriodS, 's')} />
           <Row label={t.sessions.detail.peakPeriod} value={num(conditions.swellPeakPeriodS, 's')} />
-          <Row label={t.sessions.detail.swellDirection} value={dir(conditions.swellDirectionDeg)} />
+          <DirRow label={t.sessions.detail.swellDirection} deg={conditions.swellDirectionDeg} />
           <Row label={t.sessions.detail.wave} value={num(conditions.waveHeightM, 'm')} />
           <Row label={t.sessions.detail.windWave} value={num(conditions.windWaveHeightM, 'm')} />
           <Row label={t.sessions.detail.wind} value={num(conditions.windSpeedKmh, 'km/h')} />
           <Row label={t.sessions.detail.gusts} value={num(conditions.windGustsKmh, 'km/h')} />
-          <Row label={t.sessions.detail.windDirection} value={dir(conditions.windDirectionDeg)} />
+          <DirRow label={t.sessions.detail.windDirection} deg={conditions.windDirectionDeg} />
           <Row label={t.sessions.detail.waterTemp} value={num(conditions.waterTempC, '°C')} />
           <Row label={t.sessions.detail.seaLevel} value={num(conditions.seaLevelMslM, 'm')} />
-          <Row
-            label={t.sessions.detail.tidePhase}
-            value={conditions.tidePhase !== null ? t.sessions.tide[conditions.tidePhase] : DASH}
-          />
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>{t.sessions.detail.tidePhase}</Text>
+            <View style={styles.valueWithIcon}>
+              {conditions.tidePhase !== null && (
+                <TideIcon phase={conditions.tidePhase} size={14} color={theme.colors.ink} />
+              )}
+              <Text style={styles.rowValue}>
+                {conditions.tidePhase !== null ? t.sessions.tide[conditions.tidePhase] : DASH}
+              </Text>
+            </View>
+          </View>
         </View>
       )}
     </ScrollView>
@@ -145,5 +166,6 @@ function makeStyles(theme: Theme) {
     row: { flexDirection: 'row', justifyContent: 'space-between' },
     rowLabel: { fontFamily: theme.font.body, fontSize: 14, color: theme.colors.inkMuted },
     rowValue: { fontFamily: theme.font.monoMedium, fontSize: 14, color: theme.colors.ink },
+    valueWithIcon: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   });
 }

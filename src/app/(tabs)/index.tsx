@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
+import { DirectionArrow, TideIcon } from '../../components/DirectionArrow';
 import { type SessionListItem } from '../../db/types';
 import { t } from '../../i18n';
 import { runPendingQueue } from '../../services/openmeteo/runner';
@@ -68,13 +69,29 @@ function ConditionsZone({
         </Text>
       )}
       {hasContext && (
-        <Text style={styles.condContext}>
-          {item.windSpeedKmh !== null
-            ? `${item.windSpeedKmh} km/h${item.windDirectionDeg !== null ? ` ${degToCardinal(item.windDirectionDeg)}` : ''}`
-            : DASH}
-          {' · '}
-          {item.tidePhase !== null ? t.sessions.tide[item.tidePhase] : DASH}
-        </Text>
+        <View style={styles.contextRow}>
+          {item.windSpeedKmh !== null ? (
+            <View style={styles.contextItem}>
+              {item.windDirectionDeg !== null && (
+                <DirectionArrow deg={item.windDirectionDeg} color={theme.colors.inkMuted} />
+              )}
+              <Text style={styles.condContext}>
+                {`${item.windSpeedKmh} km/h${item.windDirectionDeg !== null ? ` ${degToCardinal(item.windDirectionDeg)}` : ''}`}
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.condContext}>{DASH}</Text>
+          )}
+          <Text style={styles.condContext}>{' · '}</Text>
+          {item.tidePhase !== null ? (
+            <View style={styles.contextItem}>
+              <TideIcon phase={item.tidePhase} color={theme.colors.inkMuted} />
+              <Text style={styles.condContext}>{t.sessions.tide[item.tidePhase]}</Text>
+            </View>
+          ) : (
+            <Text style={styles.condContext}>{DASH}</Text>
+          )}
+        </View>
       )}
     </View>
   );
@@ -201,6 +218,8 @@ function makeStyles(theme: Theme) {
     condQuiet: { fontFamily: theme.font.body, fontStyle: 'italic', fontSize: 13, color: theme.colors.pending },
     condSignal: { fontFamily: theme.font.monoMedium, fontSize: 17, color: theme.colors.ink },
     condContext: { fontFamily: theme.font.mono, fontSize: 13, color: theme.colors.inkMuted },
+    contextRow: { flexDirection: 'row', alignItems: 'center' },
+    contextItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
     failedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     retry: { fontFamily: theme.font.bodySemiBold, fontSize: 13, color: theme.colors.accent, textDecorationLine: 'underline' },
     footer: { padding: space.md },
