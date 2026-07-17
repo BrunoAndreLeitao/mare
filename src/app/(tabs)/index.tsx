@@ -158,7 +158,11 @@ export default function SessionsScreen() {
   // não os usa) — daí carregarem uma vez, sem focus effect. O load das
   // sessões vive no useFocusEffect abaixo; esperamos pelos dois.
   useEffect(() => {
-    void Promise.all([loadSpots(), load()]).then(() => setLoaded(true));
+    // Falha aqui não pode desligar o gatilho para sempre: um load com erro é
+    // indistinguível de um vazio para este efeito, e as stores já mostram o
+    // erro delas. Sem o catch, um erro no arranque escondia o onboarding a um
+    // utilizador novo — silenciosamente, em todos os arranques.
+    void Promise.all([loadSpots(), load()]).finally(() => setLoaded(true));
   }, [loadSpots, load]);
 
   // Utilizador novo = sem spots E sem sessões. A conjunção importa: quem
