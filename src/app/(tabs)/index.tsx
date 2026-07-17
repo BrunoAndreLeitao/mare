@@ -17,6 +17,12 @@ import { type Theme, useTheme, radius, space } from '../../theme';
 // não silenciosa); linha inteira em falta não renderiza.
 const DASH = '—';
 
+// O onboarding é por arranque, não por remontagem: sem isto, "Saltar" volta a
+// disparar o redirect assim que o ecrã remonta (o critério — sem spots nem
+// sessões — continua verdadeiro). Módulo, não state/ref: tem de sobreviver à
+// remontagem do ecrã e morrer com o processo, que é o "próximo arranque" da spec.
+let redirectedThisLaunch = false;
+
 function Stars({ rating }: { rating: number }) {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -166,9 +172,13 @@ export default function SessionsScreen() {
   }, [loadSpots, load]);
 
   // Utilizador novo = sem spots E sem sessões. A conjunção importa: quem
-  // arquive todos os spots mas tenha histórico não é novo.
+  // arquive todos os spots mas tenha histórico não é novo. Guarda de módulo
+  // (redirectedThisLaunch) garante que isto dispara no máximo uma vez por
+  // arranque — sem ela, sair do onboarding remonta este ecrã e o redirect
+  // reentra porque o critério continua verdadeiro.
   useEffect(() => {
-    if (loaded && spots.length === 0 && sessions.length === 0) {
+    if (!redirectedThisLaunch && loaded && spots.length === 0 && sessions.length === 0) {
+      redirectedThisLaunch = true;
       router.replace('/onboarding');
     }
   }, [loaded, spots.length, sessions.length]);
@@ -181,6 +191,14 @@ export default function SessionsScreen() {
       void load();
     }, [load]),
   );
+
+  // Enquanto os loads não terminam não sabemos se este é um utilizador novo:
+  // mostrar o empty state ("Regista a primeira") a quem vai ser mandado para o
+  // onboarding seria uma mensagem errada a piscar. Só afeta o arranque com
+  // lista vazia — quem tem sessões vê-as aparecer como antes.
+  if (!loaded && sessions.length === 0) {
+    return <View style={styles.container} />;
+  }
 
   return (
     <View style={styles.container}>

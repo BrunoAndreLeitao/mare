@@ -105,7 +105,17 @@ export default function OnboardingScreen() {
         )}
         {step === 2 && (
           <>
-            <Pressable style={styles.cta} onPress={() => router.replace('/spot/novo')}>
+            <Pressable
+              style={styles.cta}
+              onPress={() => {
+                // Duas navegações de propósito: o replace põe as tabs como raiz
+                // (o onboarding não é sítio a que se volte), o push empilha o
+                // formulário por cima. Sem o replace, o back do formulário — e o
+                // router.back() pós-criação — não tinham para onde voltar.
+                router.replace('/(tabs)');
+                router.push('/spot/novo');
+              }}
+            >
               <Text style={styles.ctaLabel}>{t.onboarding.createSpot}</Text>
             </Pressable>
             <Pressable onPress={dismiss} hitSlop={8}>
