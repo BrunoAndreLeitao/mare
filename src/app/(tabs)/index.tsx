@@ -72,7 +72,10 @@ function StatsBar() {
       ? { label: t.sessions.stats.record, value: `${stats.record.swellHeightM} m · ${stats.record.spotName}` }
       : null,
     top !== null
-      ? { label: t.sessions.stats.mostSurfed, value: `${top.spotName} · ${top.count}` }
+      ? {
+          label: t.sessions.stats.mostSurfed,
+          value: `${top.spotName} · ${t.sessions.stats.sessionsCount(top.count)}`,
+        }
       : null,
   ].filter((tile) => tile !== null);
 
@@ -210,6 +213,8 @@ export default function SessionsScreen() {
 
   // Trigger 3: pull-to-refresh corre o worker E recarrega (o load final
   // garante lista fresca mesmo sem mudanças); spinner cobre a corrida toda.
+  // O worker pode transformar uma sessão pendente em recorde — sem recarregar
+  // as stats aqui, os tiles ficavam parados enquanto a lista já mudou.
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -217,9 +222,9 @@ export default function SessionsScreen() {
     } catch (e) {
       console.warn('[worker] trigger pull:', e);
     }
-    await load();
+    await Promise.all([load(), loadStats()]);
     setRefreshing(false);
-  }, [load]);
+  }, [load, loadStats]);
 
   // Os spots só interessam aqui para o gatilho do onboarding (a lista em si
   // não os usa) — daí carregarem uma vez, sem focus effect. O load das
