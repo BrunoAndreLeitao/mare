@@ -36,6 +36,16 @@ Rota `/onboarding`. O `(tabs)/index.tsx` decide após carregar: se `spots.length
 - **A conjunção importa:** quem arquive todos os spots mas tenha 30 sessões no histórico não é utilizador novo. Só "sem spots E sem sessões" é.
 - **Sem flag persistida** (decisão): o estado do utilizador É o critério. Zero infra, zero deps, zero migration. Custo aceite: quem apagar tudo revê o onboarding — o que é correto, não um bug.
 - **Consequência intencional:** "Saltar" e "Talvez mais tarde" não gravam nada, logo o onboarding reaparece no próximo arranque enquanto não houver spot. É a intenção: sem spot, o utilizador não consegue registar nada.
+- **"Próximo arranque" precisa de mecânica, não só de intenção** (lacuna da 1ª versão desta spec, apanhada na revisão final): o critério (estado do utilizador) continua verdadeiro depois de saltar, por isso o redirect voltava a disparar assim que o ecrã remontava — "saltar" não funcionava de todo. Resolve-se com uma flag `redirectedThisLaunch` de âmbito de módulo em `(tabs)/index.tsx`: sobrevive à remontagem do ecrã e morre com o processo, que É o "próximo arranque". Não é persistência — é o outro meio da decisão de não persistir.
+
+## Topologia de navegação (as saídas do onboarding)
+
+Todos os bugs encontrados na revisão final foram de forma da pilha, não de lógica. Fica explícito:
+
+- O onboarding chega por `replace`, logo a pilha é `[onboarding]` — as tabs saíram.
+- **"Saltar" / "Talvez mais tarde":** `replace('/(tabs)')`. A flag do arranque impede o bounce de volta.
+- **"Criar spot":** `replace('/(tabs)')` **seguido de** `push('/spot/novo')` → pilha `[(tabs), spot/novo]`. As duas navegações são deliberadas: sem o `replace`, a pilha ficaria só com o formulário — sem chevron de voltar (cancelar impossível) e com o `router.back()` pós-criação do `spot/novo.tsx` sem destino, encalhando o utilizador no formulário que acabou de submeter. O `spot/novo.tsx` não se toca: o `back()` dele está certo para todos os outros chamadores.
+- **Enquanto os loads não terminam**, com a lista vazia, o ecrã de sessões renderiza só o fundo: mostrar "Sem sessões — regista a primeira" a quem vai ser mandado para o onboarding é uma mensagem errada a piscar.
 
 ## Os três passos
 
