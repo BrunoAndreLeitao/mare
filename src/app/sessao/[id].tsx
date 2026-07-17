@@ -1,6 +1,10 @@
+// SPIKE TEMPORÁRIO (remover na Task 4) — provar captureRef fora do ecrã.
+import { captureRef } from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
+
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { DirectionArrow, TideIcon } from '../../components/DirectionArrow';
@@ -49,6 +53,19 @@ export default function SessionDetailScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
+  // SPIKE TEMPORÁRIO (remover na Task 4)
+  const spikeRef = useRef<View>(null);
+  async function runSpike() {
+    try {
+      // Densidade 3x via width/height (a view é 300x150): 'pixelRatio' não existe em
+      // CaptureOptions@react-native-view-shot 5.1.0 — esta versão controla o tamanho de saída por width/height.
+      const uri = await captureRef(spikeRef, { format: 'png', quality: 1, width: 900, height: 450 });
+      await Sharing.shareAsync(uri, { mimeType: 'image/png' });
+    } catch (e) {
+      console.warn('[spike] captura:', e);
+    }
+  }
+
   useFocusEffect(
     useCallback(() => {
       if (id !== undefined) {
@@ -68,6 +85,18 @@ export default function SessionDetailScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* SPIKE TEMPORÁRIO (remover na Task 4) */}
+      <View
+        ref={spikeRef}
+        collapsable={false}
+        style={{ position: 'absolute', left: -9999, top: 0, width: 300, height: 150, backgroundColor: theme.colors.surface, padding: 16 }}
+      >
+        <Text style={{ fontFamily: theme.font.displaySemiBold, fontSize: 22, color: theme.colors.ink }}>Maré · spike</Text>
+        <Text style={{ fontFamily: theme.font.mono, fontSize: 16, color: theme.colors.accent }}>1.2 m · 15 s</Text>
+      </View>
+      <Pressable onPress={() => void runSpike()} style={{ padding: 12, backgroundColor: theme.colors.accent, borderRadius: 8, margin: 16 }}>
+        <Text style={{ fontFamily: theme.font.bodySemiBold, color: theme.colors.accentOn, textAlign: 'center' }}>SPIKE partilhar</Text>
+      </Pressable>
       <Stack.Screen
         options={{
           headerRight: () => (
