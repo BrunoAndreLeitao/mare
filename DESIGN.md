@@ -109,3 +109,10 @@ Notas: `accentSoft` e `hairlineStrong` vieram com o escuro (sem equivalente no c
 | Sem motion expressivo | O princípio inegociável nº1 do CLAUDE.md é registo em <30s — coreografia visual é fricção, não valor. |
 | Tipografia diferente por tema (Fraunces/JetBrains/Instrument no claro, Spectral/Archivo no escuro) | Escolha explícita do utilizador sobre o mockup "Carta Náutica" do README, com o custo assumido: a app troca de identidade com o tema e o escuro perde tabular-nums. |
 | Tema segue o sistema, sem definição na app | O telemóvel já sabe se é de noite; uma definição seria UI e persistência sem valor acrescentado para o utilizador zero. |
+| Editar sessão: a hora é editável, contra a secção 9 do mockup ("só leitura, a hora já tem condições associadas") | Corrigir uma hora mal registada é um caso real; a invalidação de condições já existe no repo, testada, e o refetch é automático. Validado no dispositivo em 2026-07-16. |
+
+**Onboarding (secção 7 do mockup) — divergências deliberadas:** a 3ª linha do
+passo 2 não promete "recordes e streaks" (não existem: são Fase 4); o CTA final
+leva a criar spot em vez de registar sessão (sem spot, registar é uma parede);
+os ícones são os Ionicons da tab bar, não os SVG paths do mockup (evita
+react-native-svg para 3 ícones).
