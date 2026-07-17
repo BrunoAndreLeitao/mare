@@ -47,6 +47,8 @@ getStats(): Promise<SessionStatsRaw>;
 
 Três `SELECT` numa chamada. Sobre a tabela toda — imune ao LIMIT da lista.
 
+**Os três SELECT correm SEQUENCIAIS, não em `Promise.all` (decisão explícita).** Não é a mesma disciplina do `singleFlight` da Tarefa 8 — essa guarda protegia *estado partilhado* (corridas do worker a escrever nas mesmas linhas). Aqui são três leituras, sem escritas: não há nada a proteger. A razão é outra: o `SqlDb` é uma **ligação SQLite única, não um pool** — um `Promise.all` não os paraleliza, serializa-os na mesma ligação e obriga o expo-sqlite a arbitrar concorrência a troco de nada. Sequencial dá ordem determinística (um teste que falhe diz *qual* SELECT falhou) e uma leitura mais coerente: em paralelo, os SELECT poderiam intercalar com um INSERT do worker e o `record` refletir uma sessão que o `startedAtAll` não viu — improvável e inconsequente, mas sequencial não custa nada e não tem esse buraco. O custo é três `await` em vez de um: imperceptível com 5 ou com 500 sessões. Vai comentado no código.
+
 **Filtro de `fetch_status` — a distinção importa (clarificação do Bruno):**
 - `record` **filtra `fetch_status='ok'`**: o swell tem de existir para ser recorde.
 - `sessionsBySpot` **NÃO filtra**: "o spot que mais surfas" não depende de a API ter respondido. Conta todas.
