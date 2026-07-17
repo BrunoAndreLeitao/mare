@@ -9,6 +9,30 @@ export const t = {
     spots: 'Spots',
     profile: 'Perfil',
   },
+  onboarding: {
+    // Passo 1 — a tese do produto (frase de posicionamento do CLAUDE.md).
+    brand: 'Maré',
+    tagline: 'O teu diário de surf',
+    pitchLine1: 'O Surfline diz como vai estar o mar.',
+    pitchLine2: 'A Maré diz como tu surfas nesse mar.',
+    start: 'Começar',
+    // Passo 2 — como funciona, 3 factos verdadeiros HOJE (nada de streaks
+    // nem recordes: são Fase 4 e ainda não existem).
+    howTitle: 'Como funciona',
+    how1Title: 'Regista em 10 segundos',
+    how1Body: 'Spot, hora, rating, prancha. Saído da água, sem fricção.',
+    how2Title: 'As condições chegam sozinhas',
+    how2Body: 'Swell, vento e maré, associados à tua sessão automaticamente.',
+    how3Title: 'Vê o padrão ao longo do tempo',
+    how3Body: 'Cada sessão fica registada com as condições que a fizeram.',
+    next: 'Seguinte',
+    skip: 'Saltar',
+    // Passo 3 — CTA para o primeiro spot (sem spot não há registo possível).
+    readyTitle: 'Pronto para a primeira entrada?',
+    readyBody: 'Cria o teu primeiro spot para começares a registar.',
+    createSpot: 'Criar spot',
+    later: 'Talvez mais tarde',
+  },
   common: {
     save: 'Guardar',
     cancel: 'Cancelar',

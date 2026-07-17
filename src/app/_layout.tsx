@@ -72,6 +72,7 @@ export default function RootLayout() {
       <StatusBar style="auto" />
       <Stack screenOptions={screenOptions}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="spot/novo" options={{ title: t.spots.newTitle }} />
         <Stack.Screen name="spot/[id]" options={{ title: t.spots.editTitle }} />
         <Stack.Screen name="board/nova" options={{ title: t.boards.newTitle }} />
