@@ -7,8 +7,11 @@ import { DirectionArrow, TideIcon } from '../../components/DirectionArrow';
 import { type SessionListItem } from '../../db/types';
 import { t } from '../../i18n';
 import { runPendingQueue } from '../../services/openmeteo/runner';
+import { swellVsAverage } from '../../services/stats/badge';
+import { weekStreak } from '../../services/stats/streak';
 import { useSessionsStore } from '../../stores/sessionsStore';
 import { useSpotsStore } from '../../stores/spotsStore';
+import { useStatsStore } from '../../stores/statsStore';
 import { degToCardinal } from '../../utils/directions';
 import { fmtLocal } from '../../utils/format';
 import { type Theme, useTheme, radius, space } from '../../theme';
@@ -40,11 +43,58 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
+function StatTile({ label, value }: { label: string; value: string }) {
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  return (
+    <View style={styles.tile}>
+      <Text style={styles.tileValue}>{value}</Text>
+      <Text style={styles.tileLabel}>{label}</Text>
+    </View>
+  );
+}
+
+// Cada tile só existe se tiver dado real: zero placeholders, zero "—". Sem
+// nada que mostrar, a barra inteira não renderiza.
+function StatsBar() {
+  const stats = useStatsStore((s) => s.stats);
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  if (stats === null) {
+    return null;
+  }
+
+  const streak = weekStreak(stats.startedAtAll, new Date());
+  const top = stats.sessionsBySpot[0] ?? null;
+  const tiles = [
+    streak > 0 ? { label: t.sessions.stats.streak, value: t.sessions.stats.weeks(streak) } : null,
+    stats.record !== null
+      ? { label: t.sessions.stats.record, value: `${stats.record.swellHeightM} m · ${stats.record.spotName}` }
+      : null,
+    top !== null
+      ? { label: t.sessions.stats.mostSurfed, value: `${top.spotName} · ${top.count}` }
+      : null,
+  ].filter((tile) => tile !== null);
+
+  if (tiles.length === 0) {
+    return null;
+  }
+  return (
+    <View style={styles.statsBar}>
+      {tiles.map((tile) => (
+        <StatTile key={tile.label} label={tile.label} value={tile.value} />
+      ))}
+    </View>
+  );
+}
+
 function ConditionsZone({
   item,
+  pct,
   onRetry,
 }: {
   item: SessionListItem;
+  pct: number | null;
   onRetry(id: string): void;
 }) {
   const theme = useTheme();
@@ -69,11 +119,18 @@ function ConditionsZone({
   return (
     <View>
       {hasSignal && (
-        <Text style={styles.condSignal}>
-          {item.swellHeightM !== null ? `${item.swellHeightM} m` : DASH}
-          {' · '}
-          {item.swellPeriodS !== null ? `${item.swellPeriodS} s` : DASH}
-        </Text>
+        <View style={styles.signalRow}>
+          <Text style={styles.condSignal}>
+            {item.swellHeightM !== null ? `${item.swellHeightM} m` : DASH}
+            {' · '}
+            {item.swellPeriodS !== null ? `${item.swellPeriodS} s` : DASH}
+          </Text>
+          {pct !== null && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeLabel}>{`+${pct}%`}</Text>
+            </View>
+          )}
+        </View>
       )}
       {hasContext && (
         <View style={styles.contextRow}>
@@ -106,9 +163,11 @@ function ConditionsZone({
 
 function SessionCard({
   item,
+  spotSessions,
   onRetry,
 }: {
   item: SessionListItem;
+  spotSessions: SessionListItem[];
   onRetry(id: string): void;
 }) {
   const theme = useTheme();
@@ -116,6 +175,7 @@ function SessionCard({
   const meta = [item.boardName, item.durationMin !== null ? `${item.durationMin} min` : null]
     .filter((m) => m !== null)
     .join(' · ');
+  const pct = swellVsAverage(item, spotSessions);
   return (
     <Pressable style={styles.card} onPress={() => router.push(`/sessao/${item.id}`)}>
       <View style={styles.headerRow}>
@@ -126,7 +186,7 @@ function SessionCard({
         <Stars rating={item.rating} />
         {meta !== '' && <Text style={styles.meta}>{meta}</Text>}
       </View>
-      <ConditionsZone item={item} onRetry={onRetry} />
+      <ConditionsZone item={item} pct={pct} onRetry={onRetry} />
     </Pressable>
   );
 }
@@ -136,6 +196,7 @@ export default function SessionsScreen() {
   const error = useSessionsStore((s) => s.error);
   const load = useSessionsStore((s) => s.load);
   const retryConditions = useSessionsStore((s) => s.retryConditions);
+  const loadStats = useStatsStore((s) => s.load);
   const [refreshing, setRefreshing] = useState(false);
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -189,7 +250,8 @@ export default function SessionsScreen() {
   useFocusEffect(
     useCallback(() => {
       void load();
-    }, [load]),
+      void loadStats();
+    }, [load, loadStats]),
   );
 
   // Enquanto os loads não terminam não sabemos se este é um utilizador novo:
@@ -207,6 +269,7 @@ export default function SessionsScreen() {
         data={sessions}
         keyExtractor={(item) => item.id}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} />}
+        ListHeaderComponent={sessions.length > 0 ? <StatsBar /> : null}
         contentContainerStyle={sessions.length === 0 ? styles.emptyContainer : undefined}
         ListEmptyComponent={
           <View style={styles.emptyBody}>
@@ -222,7 +285,14 @@ export default function SessionsScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <SessionCard item={item} onRetry={(id) => void retryConditions(id)} />
+          // Limitação conhecida: spotSessions vem da lista em memória (LIMIT
+          // 50), por isso o badge usa a média das últimas ≤50 sessões do
+          // spot, não de sempre. Os tiles (getStats) são exatos.
+          <SessionCard
+            item={item}
+            spotSessions={sessions.filter((s) => s.spotId === item.spotId)}
+            onRetry={(id) => void retryConditions(id)}
+          />
         )}
       />
       {sessions.length > 0 && (
@@ -244,6 +314,18 @@ function makeStyles(theme: Theme) {
     emptyTitle: { fontFamily: theme.font.displayItalic, fontSize: 22, color: theme.colors.ink },
     emptyText: { textAlign: 'center', fontFamily: theme.font.body, fontSize: 15, color: theme.colors.inkMuted },
     emptyCta: { paddingHorizontal: space.xl, marginTop: space.sm },
+    statsBar: { flexDirection: 'row', gap: space.sm, paddingHorizontal: space.md, paddingTop: space.sm },
+    tile: {
+      flex: 1,
+      padding: space.sm,
+      backgroundColor: theme.colors.surface,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: theme.colors.hairline,
+      gap: space.xs2,
+    },
+    tileValue: { fontFamily: theme.font.monoMedium, fontSize: 15, color: theme.colors.ink },
+    tileLabel: { fontFamily: theme.font.body, fontSize: 11, color: theme.colors.inkMuted, textTransform: 'uppercase' },
     card: {
       marginHorizontal: space.md,
       marginTop: space.sm,
@@ -266,6 +348,14 @@ function makeStyles(theme: Theme) {
     contextRow: { flexDirection: 'row', alignItems: 'center' },
     contextItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
     failedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    signalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    badge: {
+      backgroundColor: theme.colors.accent,
+      borderRadius: radius.chip,
+      paddingHorizontal: space.sm,
+      paddingVertical: space.xs2,
+    },
+    badgeLabel: { fontFamily: theme.font.bodySemiBold, fontSize: 11, color: theme.colors.accentOn },
     retry: { fontFamily: theme.font.bodySemiBold, fontSize: 13, color: theme.colors.accent, textDecorationLine: 'underline' },
     footer: { padding: space.md },
     registerButton: {

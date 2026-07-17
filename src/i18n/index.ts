@@ -43,6 +43,13 @@ export const t = {
   sessions: {
     emptyTitle: 'Sem sessões',
     emptyBody: 'Ainda não tens sessões. Regista a primeira.',
+    stats: {
+      weeks: (n: number) => (n === 1 ? '1 semana' : `${n} semanas`),
+      record: 'Recorde',
+      mostSurfed: 'Mais surfado',
+      streak: 'Seguidas',
+      sessionsCount: (n: number) => (n === 1 ? '1 sessão' : `${n} sessões`),
+    },
     newTitle: 'Nova sessão',
     register: 'Registar sessão',
     spot: 'Spot',
