@@ -281,4 +281,44 @@ describe('sessionRepo', () => {
     // Nem boardId nem notes invalidam condições.
     expect(conditions(s.id)).toMatchObject({ fetch_status: 'pending' });
   });
+
+  test('(l) getStats agrega sobre a tabela TODA e respeita os filtros de fetch_status', async () => {
+    // spot-1: 2 sessões (1 ok, 1 pending) · spot-2: 1 sessão (ok, swell maior)
+    const s1 = await repo.create({ spotId: 'spot-1', startedAt: 1_000, rating: 4 });
+    const s2 = await repo.create({ spotId: 'spot-1', startedAt: 2_000, rating: 4 });
+    const s3 = await repo.create({ spotId: 'spot-2', startedAt: 3_000, rating: 5 });
+    raw.prepare("UPDATE session_conditions SET fetch_status='ok', swell_height_m=0.9 WHERE session_id=?").run(s1.id);
+    raw.prepare("UPDATE session_conditions SET fetch_status='ok', swell_height_m=2.1 WHERE session_id=?").run(s3.id);
+    // s2 fica pending com swell NULL
+
+    const stats = await repo.getStats();
+
+    // startedAtAll: TODAS as sessões (sem filtro de fetch_status), desc.
+    expect(stats.startedAtAll).toEqual([3_000, 2_000, 1_000]);
+
+    // record: só entre as ok — o maior swell, com o spot dele.
+    expect(stats.record).toEqual({ swellHeightM: 2.1, spotName: 'Ericeira' });
+
+    // sessionsBySpot: TODAS as sessões (a pending de spot-1 conta), desc.
+    expect(stats.sessionsBySpot).toEqual([
+      { spotName: 'Carcavelos', count: 2 },
+      { spotName: 'Ericeira', count: 1 },
+    ]);
+  });
+
+  test('(m) getStats sem sessões: arrays vazios e record null (nunca zeros fabricados)', async () => {
+    const stats = await repo.getStats();
+    expect(stats.startedAtAll).toEqual([]);
+    expect(stats.record).toBeNull();
+    expect(stats.sessionsBySpot).toEqual([]);
+  });
+
+  test('(n) getStats: record é null se NENHUMA sessão tem condições ok, mas as contagens contam-nas na mesma', async () => {
+    await repo.create({ spotId: 'spot-1', startedAt: 1_000, rating: 4 }); // fica pending
+    const stats = await repo.getStats();
+
+    expect(stats.record).toBeNull(); // sem ok não há recorde
+    expect(stats.startedAtAll).toEqual([1_000]); // mas a sessão existiu
+    expect(stats.sessionsBySpot).toEqual([{ spotName: 'Carcavelos', count: 1 }]);
+  });
 });

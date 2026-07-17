@@ -186,3 +186,16 @@ export interface SessionListItem extends Session {
   tidePhase: TidePhase | null;
   fetchStatus: FetchStatus;
 }
+
+// Factos crus para as estatísticas — o repo agrega, não conclui. O streak
+// deriva-se de startedAtAll em TS (src/services/stats/streak.ts): "semanas
+// consecutivas" em SQLite exigiria strftime + window functions, ilegível e
+// só testável com BD.
+export interface SessionStatsRaw {
+  /** started_at (epoch s, UTC) de TODAS as sessões, desc. */
+  startedAtAll: number[];
+  /** Maior swell entre sessões com condições ok, e o spot dela. */
+  record: { swellHeightM: number; spotName: string } | null;
+  /** Contagem por spot, desc. */
+  sessionsBySpot: { spotName: string; count: number }[];
+}

@@ -8,6 +8,7 @@ import {
   type Session,
   type SessionChanges,
   type SessionListItem,
+  type SessionStatsRaw,
   type TidePhase,
 } from '../types';
 
@@ -38,6 +39,12 @@ export interface SessionRepository {
   /** History screen rows — the reference query in docs/DATABASE.md (JOIN spots,
    * LEFT JOIN boards, LEFT JOIN conditions), ordered by started_at DESC. */
   listWithDetails(limit: number, offset: number): Promise<SessionListItem[]>;
+  /**
+   * Factos crus para as estatísticas, sobre a tabela TODA — deliberadamente
+   * imune ao LIMIT da lista: um recorde que desaparecesse à 51ª sessão seria
+   * um bug silencioso.
+   */
+  getStats(): Promise<SessionStatsRaw>;
   /**
    * Changing startedAt or spotId invalidates conditions: fetch_status back to
    * 'pending', retry_count=0, values cleared — enforced here in the repo, not
@@ -190,6 +197,51 @@ export function createSessionRepo(db: SqlDb, deps: RepoDeps): SessionRepository 
         [limit, offset],
       );
       return rows.map(rowToSessionListItem);
+    },
+
+    async getStats(): Promise<SessionStatsRaw> {
+      // Três SELECT SEQUENCIAIS, não Promise.all: o SqlDb é uma ligação
+      // SQLite única (não um pool), por isso paralelizar não paraleliza nada
+      // — serializa na mesma ligação e troca ordem determinística por
+      // arbitragem do expo-sqlite, a troco de zero. Sequencial também dá uma
+      // leitura mais coerente (sem intercalar com escritas do worker).
+      const dates = await db.getAllAsync<{ started_at: number }>(
+        'SELECT started_at FROM sessions ORDER BY started_at DESC',
+        [],
+      );
+
+      // Só as ok: o swell tem de existir para ser recorde.
+      const record = await db.getFirstAsync<{ swell_height_m: number; spot_name: string }>(
+        `SELECT c.swell_height_m, sp.name AS spot_name
+         FROM session_conditions c
+         JOIN sessions s ON s.id = c.session_id
+         JOIN spots sp ON sp.id = s.spot_id
+         WHERE c.fetch_status = 'ok' AND c.swell_height_m IS NOT NULL
+         ORDER BY c.swell_height_m DESC
+         LIMIT 1`,
+        [],
+      );
+
+      // SEM filtro de fetch_status: "o spot que mais surfas" não depende de a
+      // API ter respondido. Sem filtro de is_archived: um spot arquivado foi
+      // surfado na mesma (mesma razão do histórico, docs/DATABASE.md §Regras 4).
+      const bySpot = await db.getAllAsync<{ spot_name: string; n: number }>(
+        `SELECT sp.name AS spot_name, COUNT(*) AS n
+         FROM sessions s
+         JOIN spots sp ON sp.id = s.spot_id
+         GROUP BY s.spot_id, sp.name
+         ORDER BY n DESC, sp.name ASC`,
+        [],
+      );
+
+      return {
+        startedAtAll: dates.map((d) => d.started_at),
+        record:
+          record === null
+            ? null
+            : { swellHeightM: record.swell_height_m, spotName: record.spot_name },
+        sessionsBySpot: bySpot.map((b) => ({ spotName: b.spot_name, count: b.n })),
+      };
     },
 
     async getLastUsedSpotId(): Promise<string | null> {
