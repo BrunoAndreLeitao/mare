@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { DirectionArrow, TideIcon } from '../../components/DirectionArrow';
@@ -8,6 +8,7 @@ import { type SessionListItem } from '../../db/types';
 import { t } from '../../i18n';
 import { runPendingQueue } from '../../services/openmeteo/runner';
 import { useSessionsStore } from '../../stores/sessionsStore';
+import { useSpotsStore } from '../../stores/spotsStore';
 import { degToCardinal } from '../../utils/directions';
 import { fmtLocal } from '../../utils/format';
 import { type Theme, useTheme, radius, space } from '../../theme';
@@ -133,6 +134,13 @@ export default function SessionsScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
+  const spots = useSpotsStore((s) => s.spots);
+  const loadSpots = useSpotsStore((s) => s.load);
+  // O gatilho do onboarding só pode julgar DEPOIS de as duas listas terem
+  // carregado: ambas nascem vazias e `loading` nasce false, por isso a
+  // condição "vazio" é verdade no primeiro render de qualquer utilizador.
+  const [loaded, setLoaded] = useState(false);
+
   // Trigger 3: pull-to-refresh corre o worker E recarrega (o load final
   // garante lista fresca mesmo sem mudanças); spinner cobre a corrida toda.
   const onRefresh = useCallback(async () => {
@@ -145,6 +153,21 @@ export default function SessionsScreen() {
     await load();
     setRefreshing(false);
   }, [load]);
+
+  // Os spots só interessam aqui para o gatilho do onboarding (a lista em si
+  // não os usa) — daí carregarem uma vez, sem focus effect. O load das
+  // sessões vive no useFocusEffect abaixo; esperamos pelos dois.
+  useEffect(() => {
+    void Promise.all([loadSpots(), load()]).then(() => setLoaded(true));
+  }, [loadSpots, load]);
+
+  // Utilizador novo = sem spots E sem sessões. A conjunção importa: quem
+  // arquive todos os spots mas tenha histórico não é novo.
+  useEffect(() => {
+    if (loaded && spots.length === 0 && sessions.length === 0) {
+      router.replace('/onboarding');
+    }
+  }, [loaded, spots.length, sessions.length]);
 
   // Reatividade V3: recarrega ao ganhar foco (voltar do registo mostra a
   // sessão nova sem gesto). Limitação conhecida até à Tarefa 8: mudanças do
