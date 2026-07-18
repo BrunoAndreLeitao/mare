@@ -8,13 +8,13 @@ import { captureRef } from 'react-native-view-shot';
 // é estado normal, como o fetch de condições falhar (CLAUDE.md).
 export async function shareSession(ref: RefObject<View | null>): Promise<void> {
   try {
-    // Densidade: o react-native-view-shot@5.1.0 NÃO tem `pixelRatio` — esta
-    // versão controla a resolução do output por `width`. O ShareCard mede
-    // 340pt de largura; capturamos a 1020 (3×) e a altura escala pelo rácio,
-    // mantendo o cartão nítido sem fixar uma altura que varia com o estado
-    // (pending não tem hero). mimeType explícito: o default nem sempre é
-    // reconhecido pelo share sheet do Android.
-    const uri = await captureRef(ref, { format: 'png', quality: 1, width: 1020 });
+    // Densidade: sem width/height a captura sai à densidade nativa do ecrã
+    // (340pt × scale — verificado no emulador: 892px @2.625x). É o máximo de
+    // nitidez real: no 5.1.0 `width` sozinho é ignorado (o scale no Android
+    // exige width E height, ViewShot.java:800) e forçar um tamanho acima da
+    // densidade nativa seria upscale. mimeType explícito: o default nem
+    // sempre é reconhecido pelo share sheet do Android.
+    const uri = await captureRef(ref, { format: 'png', quality: 1 });
     await Sharing.shareAsync(uri, { mimeType: 'image/png' });
   } catch (e) {
     console.warn('[share] sessão:', e);
