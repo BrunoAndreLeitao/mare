@@ -110,9 +110,16 @@ Notas: `accentSoft` e `hairlineStrong` vieram com o escuro (sem equivalente no c
 | Tipografia diferente por tema (Fraunces/JetBrains/Instrument no claro, Spectral/Archivo no escuro) | Escolha explícita do utilizador sobre o mockup "Carta Náutica" do README, com o custo assumido: a app troca de identidade com o tema e o escuro perde tabular-nums. |
 | Tema segue o sistema, sem definição na app | O telemóvel já sabe se é de noite; uma definição seria UI e persistência sem valor acrescentado para o utilizador zero. |
 | Editar sessão: a hora é editável, contra a secção 9 do mockup ("só leitura, a hora já tem condições associadas") | Corrigir uma hora mal registada é um caso real; a invalidação de condições já existe no repo, testada, e o refetch é automático. Validado no dispositivo em 2026-07-16. |
+| Partilhar sessão: cartão dedicado (`ShareCard`) capturado fora do ecrã, não o ecrã de detalhe | O detalhe tem grid de 12 medidas + botões; a imagem de partilha é o "print emoldurado" do mockup t14 — leitura hero limpa + marca Maré. Tema ativo (claro partilha claro). |
+| A decisão do que a imagem mostra vive em `buildShareCardModel` (puro, testado); o `ShareCard` só desenha | Reduz a fronteira intestável (nativo) a `captureRef`+`shareAsync`; a lógica de omitir ausências fica coberta por testes. |
 
 **Onboarding (secção 7 do mockup) — divergências deliberadas:** a 3ª linha do
 passo 2 não promete "recordes e streaks" (não existem: são Fase 4); o CTA final
 leva a criar spot em vez de registar sessão (sem spot, registar é uma parede);
 os ícones são os Ionicons da tab bar, não os SVG paths do mockup (evita
 react-native-svg para 3 ícones).
+
+**T15 (definições de unidades) — adiada (2026-07-17):** exige persistência de
+preferências (inexistente no projeto) + threading das unidades por 8+ sítios.
+Sem beta a começar e com o utilizador zero em métrico, o custo não se justifica.
+Retomar quando um tester precisar de pés/nós.
