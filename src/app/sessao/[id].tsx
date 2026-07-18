@@ -1,15 +1,14 @@
-// SPIKE TEMPORÁRIO (remover na Task 4) — provar captureRef fora do ecrã.
-import { captureRef } from 'react-native-view-shot';
-import * as Sharing from 'expo-sharing';
-
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { DirectionArrow, TideIcon } from '../../components/DirectionArrow';
+import { ShareCard } from '../../components/ShareCard';
 import { type SessionConditions } from '../../db/types';
 import { t } from '../../i18n';
+import { buildShareCardModel } from '../../services/share/shareCardModel';
+import { shareSession } from '../../services/share/shareSession';
 import { useSessionsStore } from '../../stores/sessionsStore';
 import { degToCardinal } from '../../utils/directions';
 import { fmtLocal } from '../../utils/format';
@@ -53,18 +52,7 @@ export default function SessionDetailScreen() {
   const theme = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
-  // SPIKE TEMPORÁRIO (remover na Task 4)
-  const spikeRef = useRef<View>(null);
-  async function runSpike() {
-    try {
-      // Densidade 3x via width/height (a view é 300x150): 'pixelRatio' não existe em
-      // CaptureOptions@react-native-view-shot 5.1.0 — esta versão controla o tamanho de saída por width/height.
-      const uri = await captureRef(spikeRef, { format: 'png', quality: 1, width: 900, height: 450 });
-      await Sharing.shareAsync(uri, { mimeType: 'image/png' });
-    } catch (e) {
-      console.warn('[spike] captura:', e);
-    }
-  }
+  const shareRef = useRef<View>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -83,26 +71,30 @@ export default function SessionDetailScreen() {
     .filter((m) => m !== null)
     .join(' · ');
 
+  // Puro e barato — reconstruir em cada render é deliberado: quando conditions
+  // chega, o cartão passa a ter hero sem gesto nenhum.
+  const shareModel = buildShareCardModel(session, conditions);
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* SPIKE TEMPORÁRIO (remover na Task 4) */}
-      <View
-        ref={spikeRef}
-        collapsable={false}
-        style={{ position: 'absolute', left: -9999, top: 0, width: 300, height: 150, backgroundColor: theme.colors.surface, padding: 16 }}
-      >
-        <Text style={{ fontFamily: theme.font.displaySemiBold, fontSize: 22, color: theme.colors.ink }}>Maré · spike</Text>
-        <Text style={{ fontFamily: theme.font.mono, fontSize: 16, color: theme.colors.accent }}>1.2 m · 15 s</Text>
+      <View style={styles.offscreen} pointerEvents="none">
+        <ShareCard ref={shareRef} model={shareModel} />
       </View>
-      <Pressable onPress={() => void runSpike()} style={{ padding: 12, backgroundColor: theme.colors.accent, borderRadius: 8, margin: 16 }}>
-        <Text style={{ fontFamily: theme.font.bodySemiBold, color: theme.colors.accentOn, textAlign: 'center' }}>SPIKE partilhar</Text>
-      </Pressable>
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Pressable onPress={() => router.push(`/sessao/editar/${session.id}`)} hitSlop={8}>
-              <Ionicons name="create-outline" size={22} color={theme.colors.ink} />
-            </Pressable>
+            <View style={styles.headerActions}>
+              <Pressable
+                onPress={() => void shareSession(shareRef)}
+                hitSlop={8}
+                accessibilityLabel={t.sessions.share}
+              >
+                <Ionicons name="share-outline" size={22} color={theme.colors.ink} />
+              </Pressable>
+              <Pressable onPress={() => router.push(`/sessao/editar/${session.id}`)} hitSlop={8}>
+                <Ionicons name="create-outline" size={22} color={theme.colors.ink} />
+              </Pressable>
+            </View>
           ),
         }}
       />
@@ -196,5 +188,7 @@ function makeStyles(theme: Theme) {
     rowLabel: { fontFamily: theme.font.body, fontSize: 14, color: theme.colors.inkMuted },
     rowValue: { fontFamily: theme.font.monoMedium, fontSize: 14, color: theme.colors.ink },
     valueWithIcon: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    offscreen: { position: 'absolute', left: -9999, top: 0 },
+    headerActions: { flexDirection: 'row', gap: space.md },
   });
 }

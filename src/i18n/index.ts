@@ -70,6 +70,7 @@ export const t = {
     conditionsPending: 'Condições a obter…',
     conditionsUnavailable: 'Condições indisponíveis',
     retryFetch: 'Tentar de novo',
+    share: 'Partilhar',
     conditionsTitle: 'Condições',
     tide: {
       rising: 'a encher',
