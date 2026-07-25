@@ -90,6 +90,7 @@ Regras: trabalhar por ordem; uma fase só fecha quando a Definition of Done (DoD
 
 - [ ] P0 — Usar na água. Anotar fricções reais no registo
 - [ ] P0 — Internal testing (Play Console) + TestFlight com 5-10 surfistas de Carcavelos
+  <!-- Progresso (2026-07-25): identidade de build preparada — app.json com android.package/versionCode e ios.bundleIdentifier/buildNumber (com.brunoleitao.mare, v1), eas.json com 3 perfis (development/preview/production). Decisão confirmada com o Bruno: sem conta/login no MVP nem na Fase 5 — RevenueCat liga compras ao dispositivo/loja, não a uma conta própria; "conta + backup/sync" mantém-se no Backlog Frio (Fase 6+). Falta: eas login/eas init (gera projectId), política de privacidade (obrigatória nas lojas por causa do expo-location), ficha da store (screenshots, descrição). -->
 - [ ] P1 — Corrigir o top 5 de fricções reportadas antes de qualquer feature nova
 
 ---

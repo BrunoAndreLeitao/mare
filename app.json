@@ -8,9 +8,13 @@
     "scheme": "mare",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.brunoleitao.mare",
+      "buildNumber": "1"
     },
     "android": {
+      "package": "com.brunoleitao.mare",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
