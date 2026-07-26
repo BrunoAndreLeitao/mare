@@ -38,10 +38,11 @@ surf,diário,ondas,maré,marés,ondulação,swell,spot,prancha,surfista,registo,
 ## Screenshots
 
 Capturados no emulador (Medium Phone API 36.1, tema escuro "Carta Náutica") em `docs/store-screenshots/`:
-1. `screenshot-1-nova-sessao.png` — ecrã "Nova sessão" (a proposta de valor: registo rápido)
+0. `screenshot-0-onboarding.png` — primeiro ecrã de onboarding (a proposta de valor: "O Surfline diz como vai estar o mar. A Maré diz como TU surfas nesse mar.")
+1. `screenshot-1-nova-sessao.png` — ecrã "Nova sessão" (registo rápido)
 2. `screenshot-2-historico.png` — histórico de sessões com tiles de estatísticas e cartão de condições
 3. `screenshot-3-detalhe-sessao.png` — detalhe de sessão com condições completas (dados reais Open-Meteo)
 
-**Nota:** capturados a partir de uma sessão de teste real gravada na BD local do emulador (spot "Carcavelos" — coordenadas por defeito do emulador, não o Carcavelos real). Antes de usar em produção, considerar recapturar com dados limpos/reais ou tratar como material de marketing aceitável (é o fluxo real da app).
+**Nota:** os screenshots 1-3 vêm de uma sessão de teste anterior (spot "Carcavelos" com coordenadas por defeito do emulador). O 0 vem de uma instalação limpa subsequente. Antes de usar em produção, considerar recapturar tudo numa única passagem com dados limpos/reais.
 
-Pendente: ecrã de spot/quiver e cartão de partilha (ShareCard) — o emulador usado não tinha pranchas nem múltiplos spots por serem dados de outra sessão de teste anterior.
+Pendente: ecrã de spot/quiver e cartão de partilha (ShareCard) — não foi possível completar nesta sessão por instabilidade de toque no emulador ao navegar formulários (botões "Criar spot"/"Adicionar prancha" não responderam de forma fiável a taps sintéticos via ADB nesta build). Recapturar manualmente ou numa sessão futura.
